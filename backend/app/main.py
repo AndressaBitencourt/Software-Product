@@ -45,6 +45,10 @@ def create_app(inicializar: bool = True) -> FastAPI:
 
     app.include_router(produtos.router)
 
+    from app.routers import pedidos
+
+    app.include_router(pedidos.router)
+
     if FRONTEND_DIR.is_dir():
         app.mount(
             "/", StaticFiles(directory=FRONTEND_DIR, html=True), name="frontend"
