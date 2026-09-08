@@ -69,3 +69,41 @@ def test_criar_pedido_produto_indisponivel_400(client: TestClient, db_session) -
     )
     assert resp.status_code == 400
     assert "indisponível" in resp.json()["detail"]
+
+
+def test_listar_pedidos(client: TestClient) -> None:
+    client.post("/api/pedidos", json=PEDIDO_VALIDO)
+    client.post(
+        "/api/pedidos",
+        json={"cliente_nome": "João", "itens": [{"produto_id": 2, "quantidade": 1}]},
+    )
+
+    resp = client.get("/api/pedidos")
+    assert resp.status_code == 200
+    corpo = resp.json()
+    assert len(corpo) == 2
+    primeiro = corpo[0]
+    assert set(primeiro) == {
+        "id", "cliente_nome", "status", "quantidade_itens", "total", "criado_em"
+    }
+    # o mais recente (João) vem primeiro
+    assert primeiro["cliente_nome"] == "João"
+    assert primeiro["quantidade_itens"] == 1
+    assert primeiro["total"] == "22.00"
+
+
+def test_detalhar_pedido(client: TestClient) -> None:
+    criado = client.post("/api/pedidos", json=PEDIDO_VALIDO).json()
+
+    resp = client.get(f"/api/pedidos/{criado['id']}")
+    assert resp.status_code == 200
+    corpo = resp.json()
+    assert corpo["id"] == criado["id"]
+    assert corpo["total"] == "48.00"
+    assert len(corpo["itens"]) == 2
+
+
+def test_detalhar_pedido_inexistente_404(client: TestClient) -> None:
+    resp = client.get("/api/pedidos/999")
+    assert resp.status_code == 404
+    assert resp.json()["detail"] == "Pedido não encontrado."
