@@ -41,7 +41,7 @@ backend/
       __init__.py
       produtos.py             # GET /api/produtos, GET /api/produtos/{id}
       pedidos.py              # POST/GET/GET{id}/PUT/DELETE /api/pedidos
-    main.py                   # create_app(create_tables, run_seed) + app + /api/health + mount estático
+    main.py                   # create_app(inicializar) + lifespan + app + /api/health + mount estático
   tests/
     conftest.py               # fixtures db_session e client
     test_health.py
@@ -82,9 +82,10 @@ README.md
   - `app.models.Produto(id, nome, descricao, preco, categoria, disponivel)`.
   - `app.models.Pedido(id, cliente_nome, observacao, status, criado_em, atualizado_em, itens: list[ItemPedido])`.
   - `app.models.ItemPedido(id, pedido_id, produto_id, quantidade, preco_unitario, pedido, produto)`.
-  - `app.main.create_app(create_tables: bool = True, run_seed: bool = True) -> FastAPI`.
-  - `app.main.app` — instância default.
-  - Fixtures pytest: `db_session` (Session em SQLite `:memory:` com todas as tabelas criadas) e `client` (`TestClient` cujo `get_db` devolve `db_session`).
+  - `app.main.inicializar_banco() -> None` — cria as tabelas (`Base.metadata.create_all`) e roda o seed; chamado só no startup do servidor real.
+  - `app.main.create_app(inicializar: bool = True) -> FastAPI` — com `inicializar=True` registra um `lifespan` que chama `inicializar_banco()` quando o servidor sobe (nunca no import). Testes usam `inicializar=False`.
+  - `app.main.app` — instância default (`create_app()`), usada por `uvicorn app.main:app`.
+  - Fixtures pytest: `db_session` (Session em SQLite `:memory:` com todas as tabelas criadas e `PRAGMA foreign_keys=ON`) e `client` (`TestClient` cujo `get_db` devolve `db_session`).
 
 - [ ] **Step 1: Criar a branch de trabalho**
 
@@ -160,6 +161,7 @@ def get_db() -> Iterator[Session]:
 from __future__ import annotations
 
 from datetime import datetime, timezone
+from decimal import Decimal
 
 from sqlalchemy import Boolean, DateTime, ForeignKey, Numeric, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -177,7 +179,7 @@ class Produto(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     nome: Mapped[str] = mapped_column(String(80), unique=True)
     descricao: Mapped[str | None] = mapped_column(String(255), default=None)
-    preco: Mapped[float] = mapped_column(Numeric(10, 2))
+    preco: Mapped[Decimal] = mapped_column(Numeric(10, 2))
     categoria: Mapped[str] = mapped_column(String(40))
     disponivel: Mapped[bool] = mapped_column(Boolean, default=True)
 
@@ -189,9 +191,11 @@ class Pedido(Base):
     cliente_nome: Mapped[str] = mapped_column(String(80))
     observacao: Mapped[str | None] = mapped_column(String(255), default=None)
     status: Mapped[str] = mapped_column(String(20), default="recebido")
-    criado_em: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
+    criado_em: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=utcnow
+    )
     atualizado_em: Mapped[datetime] = mapped_column(
-        DateTime, default=utcnow, onupdate=utcnow
+        DateTime(timezone=True), default=utcnow, onupdate=utcnow
     )
 
     itens: Mapped[list["ItemPedido"]] = relationship(
@@ -210,7 +214,7 @@ class ItemPedido(Base):
     )
     produto_id: Mapped[int] = mapped_column(ForeignKey("produto.id"))
     quantidade: Mapped[int] = mapped_column()
-    preco_unitario: Mapped[float] = mapped_column(Numeric(10, 2))
+    preco_unitario: Mapped[Decimal] = mapped_column(Numeric(10, 2))
 
     pedido: Mapped["Pedido"] = relationship(back_populates="itens")
     produto: Mapped["Produto"] = relationship(lazy="joined")
@@ -220,35 +224,49 @@ class ItemPedido(Base):
 
 ```python
 import os
+from contextlib import asynccontextmanager
 from pathlib import Path
 
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 
+from app import models  # noqa: F401  -- registra as tabelas em Base.metadata
 from app.database import Base, SessionLocal, engine
 
 _DEFAULT_FRONTEND = Path(__file__).resolve().parent.parent.parent / "frontend"
 FRONTEND_DIR = Path(os.environ.get("FRONTEND_DIR", str(_DEFAULT_FRONTEND)))
 
 
-def create_app(create_tables: bool = True, run_seed: bool = True) -> FastAPI:
-    app = FastAPI(title="Hamburgueria — Pedidos", version="1.0.0")
+def inicializar_banco() -> None:
+    """Cria as tabelas e popula o cardápio. Só roda no startup do servidor real."""
+    Base.metadata.create_all(engine)
+    from app.seed import seed_cardapio
 
-    if create_tables:
-        Base.metadata.create_all(engine)
+    db = SessionLocal()
+    try:
+        seed_cardapio(db)
+    finally:
+        db.close()
 
-    if run_seed:
-        from app.seed import seed_cardapio
 
-        db = SessionLocal()
-        try:
-            seed_cardapio(db)
-        finally:
-            db.close()
+@asynccontextmanager
+async def _lifespan(_app: FastAPI):
+    inicializar_banco()
+    yield
+
+
+def create_app(inicializar: bool = True) -> FastAPI:
+    app = FastAPI(
+        title="Hamburgueria — Pedidos",
+        version="1.0.0",
+        lifespan=_lifespan if inicializar else None,
+    )
 
     @app.get("/api/health", tags=["infra"])
     def health() -> dict[str, str]:
         return {"status": "ok"}
+
+    # os routers de produtos e pedidos são incluídos aqui nos tasks seguintes.
 
     if FRONTEND_DIR.is_dir():
         app.mount(
@@ -261,7 +279,10 @@ def create_app(create_tables: bool = True, run_seed: bool = True) -> FastAPI:
 app = create_app()
 ```
 
-Nota: `from app.seed import ...` fica dentro da função de propósito — `seed.py` só existe a partir do Task 2, e nenhum teste chama `create_app(run_seed=True)` antes disso.
+Notas:
+- `from app import models` no topo garante que `Base.metadata` conhece as três tabelas antes de qualquer `create_all` — sem isso, `uvicorn app.main:app` subiria com um banco sem tabelas.
+- Criação de tabelas + seed acontecem **só no `lifespan`** (startup do servidor). Importar `app.main` (o que os testes fazem) não toca em disco nem em banco.
+- `from app.seed import ...` fica dentro de `inicializar_banco` de propósito: `seed.py` só existe a partir do Task 2, e nada chama `inicializar_banco` antes disso (a fixture `client` usa `inicializar=False`). **Não criar stub de `seed.py` no Task 1.**
 
 - [ ] **Step 8: `backend/tests/conftest.py`**
 
@@ -270,7 +291,7 @@ from collections.abc import Iterator
 
 import pytest
 from fastapi.testclient import TestClient
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, event
 from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.pool import StaticPool
 
@@ -285,6 +306,13 @@ def db_session() -> Iterator[Session]:
         connect_args={"check_same_thread": False},
         poolclass=StaticPool,
     )
+
+    @event.listens_for(test_engine, "connect")
+    def _fk_on(dbapi_connection, _record):
+        cursor = dbapi_connection.cursor()
+        cursor.execute("PRAGMA foreign_keys=ON")
+        cursor.close()
+
     Base.metadata.create_all(test_engine)
     TestingSession = sessionmaker(
         bind=test_engine, autoflush=False, autocommit=False
@@ -299,7 +327,7 @@ def db_session() -> Iterator[Session]:
 
 @pytest.fixture
 def client(db_session: Session) -> Iterator[TestClient]:
-    app = create_app(create_tables=False, run_seed=False)
+    app = create_app(inicializar=False)
 
     def _override_get_db() -> Iterator[Session]:
         yield db_session
@@ -1251,25 +1279,11 @@ git commit -m "feat: exclusao de pedido com cascade nos itens"
 
 ```python
 from fastapi.testclient import TestClient
-from sqlalchemy.orm import Session
-from sqlalchemy.pool import StaticPool
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-
-from app.database import Base, get_db
-from app.main import create_app
 
 
-def test_raiz_serve_o_index(db_session: Session) -> None:
-    # create_app monta o front automaticamente se a pasta frontend/ existe
-    app = create_app(create_tables=False, run_seed=False)
-
-    def _override():
-        yield db_session
-
-    app.dependency_overrides[get_db] = _override
-    with TestClient(app) as c:
-        resp = c.get("/")
+def test_raiz_serve_o_index(client: TestClient) -> None:
+    # a fixture `client` já monta o front (create_app monta frontend/ se a pasta existe)
+    resp = client.get("/")
     assert resp.status_code == 200
     assert "Hamburgueria" in resp.text
     assert "app.js" in resp.text
@@ -1965,4 +1979,4 @@ O merge para `main` fica a critério de vocês (a próxima fase parte de `main` 
 
 **2. Placeholders:** nenhum "TBD"/"TODO"; todo passo de código traz o código real. ✔
 
-**3. Consistência de tipos:** `RegraNegocioError.mensagem`, `seed_cardapio(db) -> int`, `create_app(create_tables, run_seed)`, `pedido_para_out` / `pedido_para_resumo`, `Money` — nomes idênticos entre a definição (Tasks 1–4) e o uso (Tasks 4–8). `crud.py` é escrito inteiro no Task 3, então `atualizar_pedido`/`excluir_pedido` já existem quando os Tasks 6 e 7 ligam as rotas. ✔
+**3. Consistência de tipos:** `RegraNegocioError.mensagem`, `seed_cardapio(db) -> int`, `create_app(inicializar)` + `inicializar_banco()`, `pedido_para_out` / `pedido_para_resumo`, `Money` — nomes idênticos entre a definição (Tasks 1–4) e o uso (Tasks 4–8). `crud.py` é escrito inteiro no Task 3, então `atualizar_pedido`/`excluir_pedido` já existem quando os Tasks 6 e 7 ligam as rotas. ✔
