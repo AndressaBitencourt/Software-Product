@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime, timezone
+from decimal import Decimal
 
 from sqlalchemy import Boolean, DateTime, ForeignKey, Numeric, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -18,7 +19,7 @@ class Produto(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     nome: Mapped[str] = mapped_column(String(80), unique=True)
     descricao: Mapped[str | None] = mapped_column(String(255), default=None)
-    preco: Mapped[float] = mapped_column(Numeric(10, 2))
+    preco: Mapped[Decimal] = mapped_column(Numeric(10, 2))
     categoria: Mapped[str] = mapped_column(String(40))
     disponivel: Mapped[bool] = mapped_column(Boolean, default=True)
 
@@ -30,9 +31,11 @@ class Pedido(Base):
     cliente_nome: Mapped[str] = mapped_column(String(80))
     observacao: Mapped[str | None] = mapped_column(String(255), default=None)
     status: Mapped[str] = mapped_column(String(20), default="recebido")
-    criado_em: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
+    criado_em: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=utcnow
+    )
     atualizado_em: Mapped[datetime] = mapped_column(
-        DateTime, default=utcnow, onupdate=utcnow
+        DateTime(timezone=True), default=utcnow, onupdate=utcnow
     )
 
     itens: Mapped[list["ItemPedido"]] = relationship(
@@ -51,7 +54,7 @@ class ItemPedido(Base):
     )
     produto_id: Mapped[int] = mapped_column(ForeignKey("produto.id"))
     quantidade: Mapped[int] = mapped_column()
-    preco_unitario: Mapped[float] = mapped_column(Numeric(10, 2))
+    preco_unitario: Mapped[Decimal] = mapped_column(Numeric(10, 2))
 
     pedido: Mapped["Pedido"] = relationship(back_populates="itens")
     produto: Mapped["Produto"] = relationship(lazy="joined")
