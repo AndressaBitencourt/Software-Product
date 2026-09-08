@@ -107,3 +107,37 @@ def test_detalhar_pedido_inexistente_404(client: TestClient) -> None:
     resp = client.get("/api/pedidos/999")
     assert resp.status_code == 404
     assert resp.json()["detail"] == "Pedido não encontrado."
+
+
+def test_editar_pedido_recalcula_total(client: TestClient) -> None:
+    criado = client.post("/api/pedidos", json=PEDIDO_VALIDO).json()
+
+    novo_corpo = {
+        "cliente_nome": "Maria Clara",
+        "observacao": None,
+        "itens": [{"produto_id": 3, "quantidade": 2}],  # X-Tudo 28.00
+    }
+    resp = client.put(f"/api/pedidos/{criado['id']}", json=novo_corpo)
+    assert resp.status_code == 200
+    corpo = resp.json()
+    assert corpo["cliente_nome"] == "Maria Clara"
+    assert len(corpo["itens"]) == 1
+    assert corpo["total"] == "56.00"
+    assert corpo["atualizado_em"] >= corpo["criado_em"]
+
+
+def test_editar_pedido_inexistente_404(client: TestClient) -> None:
+    resp = client.put(
+        "/api/pedidos/999",
+        json={"cliente_nome": "X", "itens": [{"produto_id": 1, "quantidade": 1}]},
+    )
+    assert resp.status_code == 404
+
+
+def test_editar_pedido_sem_itens_400(client: TestClient) -> None:
+    criado = client.post("/api/pedidos", json=PEDIDO_VALIDO).json()
+    resp = client.put(
+        f"/api/pedidos/{criado['id']}",
+        json={"cliente_nome": "Maria", "itens": []},
+    )
+    assert resp.status_code == 400

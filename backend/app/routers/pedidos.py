@@ -31,3 +31,16 @@ def detalhar(pedido_id: int, db: Session = Depends(get_db)):
     if pedido is None:
         raise HTTPException(status_code=404, detail="Pedido não encontrado.")
     return serializers.pedido_para_out(pedido)
+
+
+@router.put("/{pedido_id}", response_model=schemas.PedidoOut)
+def atualizar(
+    pedido_id: int, dados: schemas.PedidoIn, db: Session = Depends(get_db)
+):
+    try:
+        pedido = crud.atualizar_pedido(db, pedido_id, dados)
+    except crud.RegraNegocioError as erro:
+        raise HTTPException(status_code=400, detail=erro.mensagem)
+    if pedido is None:
+        raise HTTPException(status_code=404, detail="Pedido não encontrado.")
+    return serializers.pedido_para_out(pedido)
