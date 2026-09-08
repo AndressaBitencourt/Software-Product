@@ -41,7 +41,9 @@ def create_app(inicializar: bool = True) -> FastAPI:
     def health() -> dict[str, str]:
         return {"status": "ok"}
 
-    # os routers de produtos e pedidos são incluídos aqui nos tasks seguintes.
+    from app.routers import produtos
+
+    app.include_router(produtos.router)
 
     if FRONTEND_DIR.is_dir():
         app.mount(
