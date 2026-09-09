@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Hamburgueria — Pedidos</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header>
+    <h1>🍔 Hamburgueria — Pedidos</h1>
+  </header>
+
+  <div id="aviso" class="aviso" hidden></div>
+
+  <main>
+    <section id="secao-cardapio">
+      <h2>Cardápio</h2>
+      <div id="cardapio" class="cards"></div>
+    </section>
+
+    <section id="secao-form">
+      <h2 id="form-titulo">Novo pedido</h2>
+      <form id="form-pedido">
+        <label>Cliente
+          <input type="text" id="cliente_nome" maxlength="80" required />
+        </label>
+        <label>Observação
+          <input type="text" id="observacao" maxlength="255" />
+        </label>
+
+        <h3>Itens</h3>
+        <ul id="carrinho"></ul>
+        <p id="carrinho-vazio">Nenhum item. Use "Adicionar" no cardápio.</p>
+        <p class="total">Total: <strong id="form-total">R$ 0,00</strong></p>
+
+        <div class="acoes">
+          <button type="submit" id="btn-salvar">Fazer pedido</button>
+          <button type="button" id="btn-cancelar" hidden>Cancelar edição</button>
+        </div>
+      </form>
+    </section>
+
+    <section id="secao-pedidos">
+      <h2>Pedidos</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>#</th><th>Cliente</th><th>Itens</th><th>Total</th>
+            <th>Status</th><th>Criado em</th><th></th>
+          </tr>
+        </thead>
+        <tbody id="lista-pedidos"></tbody>
+      </table>
+      <p id="pedidos-vazio">Nenhum pedido ainda.</p>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

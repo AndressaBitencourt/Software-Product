@@ -1,0 +1,90 @@
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  color: #222;
+  background: #faf7f2;
+}
+header {
+  background: #b5301f;
+  color: #fff;
+  padding: 16px 24px;
+}
+header h1 { margin: 0; font-size: 1.4rem; }
+main {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 24px 16px;
+  display: grid;
+  gap: 32px;
+}
+h2 { border-bottom: 2px solid #e6ddd0; padding-bottom: 4px; }
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
+}
+.card {
+  background: #fff;
+  border: 1px solid #e6ddd0;
+  border-radius: 8px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.card small { color: #777; }
+.card .preco { font-weight: 700; color: #b5301f; }
+.card button { margin-top: auto; }
+button {
+  background: #b5301f;
+  color: #fff;
+  border: 0;
+  border-radius: 6px;
+  padding: 8px 12px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+button.secundario { background: #6c757d; }
+button.perigo { background: #8a1c10; }
+form label {
+  display: block;
+  margin-bottom: 10px;
+}
+form input {
+  display: block;
+  width: 100%;
+  padding: 8px;
+  margin-top: 4px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+#carrinho { list-style: none; padding: 0; display: grid; gap: 6px; }
+#carrinho li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #fff;
+  border: 1px solid #e6ddd0;
+  border-radius: 6px;
+  padding: 6px 10px;
+}
+#carrinho li span { flex: 1; }
+#carrinho li input { width: 64px; }
+table { width: 100%; border-collapse: collapse; background: #fff; }
+th, td { border: 1px solid #e6ddd0; padding: 8px; text-align: left; font-size: 0.9rem; }
+.acoes { display: flex; gap: 8px; }
+.aviso {
+  max-width: 960px;
+  margin: 12px auto 0;
+  padding: 10px 16px;
+  border-radius: 6px;
+}
+.aviso.erro { background: #f8d7da; color: #842029; }
+.aviso.ok { background: #d1e7dd; color: #0f5132; }
+.detalhe-itens { background: #fbf6ee; }
+@media (max-width: 600px) {
+  table, thead, tbody, th, td, tr { display: block; }
+  thead { display: none; }
+  td { border: 0; border-bottom: 1px solid #eee; }
+}
