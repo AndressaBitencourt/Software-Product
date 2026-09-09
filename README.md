@@ -13,7 +13,17 @@ CRUD completo de pedidos, com front-end, back-end e banco de dados.
 
 ## Como rodar
 
-### Opção A — Docker (recomendada, funciona igual em macOS e Windows)
+### Opção mais fácil — script pronto
+
+Fiz um script que acha o Python, cria o ambiente virtual, instala as
+dependências e sobe o app. Não precisa de Docker.
+
+- macOS / Linux: `./run.sh`
+- Windows: dê dois cliques em `run.bat` (ou rode `run.bat` no terminal)
+
+Para rodar os testes em vez do servidor: `./run.sh test` (ou `run.bat test`).
+
+### Opção A — Docker (funciona igual em macOS e Windows)
 
 Pré-requisito: Docker Desktop instalado e aberto.
 
