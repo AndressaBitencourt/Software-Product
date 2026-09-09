@@ -1980,3 +1980,40 @@ O merge para `main` fica a critério de vocês (a próxima fase parte de `main` 
 **2. Placeholders:** nenhum "TBD"/"TODO"; todo passo de código traz o código real. ✔
 
 **3. Consistência de tipos:** `RegraNegocioError.mensagem`, `seed_cardapio(db) -> int`, `create_app(inicializar)` + `inicializar_banco()`, `pedido_para_out` / `pedido_para_resumo`, `Money` — nomes idênticos entre a definição (Tasks 1–4) e o uso (Tasks 4–8). `crud.py` é escrito inteiro no Task 3, então `atualizar_pedido`/`excluir_pedido` já existem quando os Tasks 6 e 7 ligam as rotas. ✔
+
+---
+
+## Apêndice — correções pós-revisão final da branch (commit `82b2ae5`)
+
+A revisão final da branch inteira (antes do merge) apontou itens que foram
+corrigidos numa única leva, além do que está descrito nos tasks acima:
+
+1. **Datas em UTC no JSON.** `schemas.py` ganhou o tipo `UtcDatetime`
+   (`Annotated[datetime, PlainSerializer(...)]`) que serializa como ISO-8601
+   UTC com sufixo `Z`. Aplicado a `PedidoOut.criado_em` / `atualizado_em` e
+   `PedidoResumo.criado_em`. Sem isso, o `new Date(...)` do front
+   interpretava a string sem fuso como horário local e mostrava data/hora
+   errada. `models.py` continua com `DateTime(timezone=True)` (naive no
+   SQLite) — reatar o fuso na borda basta para a Fase 1; um
+   `TypeDecorator` que deixe o atributo do ORM tz-aware fica no backlog da
+   Fase 2.
+2. **`.dockerignore` recursivo.** Todos os padrões relevantes passaram a
+   ter prefixo `**/` (`**/.venv`, `**/*.db`, `**/.pytest_cache`, …) e
+   `backend/tests` foi excluído da imagem. Antes, seguir a Opção B do
+   README (`cd backend && python -m venv .venv`) e depois a Opção A
+   copiaria o virtualenv inteiro para o contexto de build.
+3. **Desempate na listagem de pedidos.** `crud.listar_pedidos` ordena por
+   `criado_em.desc(), id.desc()` — evita ordem indefinida (e teste
+   instável) em empate de timestamp.
+4. **Novos testes de invariante:** `test_preco_unitario_e_snapshot`
+   (alterar o preço do produto não muda pedidos já feitos) e
+   `test_editar_pedido_remove_itens_antigos` (o `PUT` apaga os
+   `ItemPedido` órfãos). `test_timestamps_saem_em_utc_com_z` cobre o item 1.
+
+Total de testes ao fim da Fase 1: **28**, todos passando, saída limpa.
+
+Itens menores adiados para a Fase 2 estão registrados no ledger do SDD
+(`.superpowers/sdd/2026-09-08-hamburgueria-fase-1/progress.md`, seção
+"FASE 2 BACKLOG"): escapar `innerHTML` no front, `raise ... from`,
+imports de router no escopo do módulo, `mkdir` no import de `database.py`,
+entre outros — nenhum bloqueia a entrega da Fase 1.
