@@ -44,3 +44,9 @@ def atualizar(
     if pedido is None:
         raise HTTPException(status_code=404, detail="Pedido não encontrado.")
     return serializers.pedido_para_out(pedido)
+
+
+@router.delete("/{pedido_id}", status_code=status.HTTP_204_NO_CONTENT)
+def excluir(pedido_id: int, db: Session = Depends(get_db)):
+    if not crud.excluir_pedido(db, pedido_id):
+        raise HTTPException(status_code=404, detail="Pedido não encontrado.")

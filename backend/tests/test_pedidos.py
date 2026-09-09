@@ -141,3 +141,31 @@ def test_editar_pedido_sem_itens_400(client: TestClient) -> None:
         json={"cliente_nome": "Maria", "itens": []},
     )
     assert resp.status_code == 400
+
+
+def test_excluir_pedido(client: TestClient) -> None:
+    criado = client.post("/api/pedidos", json=PEDIDO_VALIDO).json()
+
+    resp = client.delete(f"/api/pedidos/{criado['id']}")
+    assert resp.status_code == 204
+    assert resp.content == b""
+
+    assert client.get(f"/api/pedidos/{criado['id']}").status_code == 404
+    assert client.get("/api/pedidos").json() == []
+
+
+def test_excluir_pedido_remove_itens_em_cascata(
+    client: TestClient, db_session
+) -> None:
+    from app import models
+
+    criado = client.post("/api/pedidos", json=PEDIDO_VALIDO).json()
+    assert db_session.query(models.ItemPedido).count() == 2
+
+    client.delete(f"/api/pedidos/{criado['id']}")
+    assert db_session.query(models.ItemPedido).count() == 0
+
+
+def test_excluir_pedido_inexistente_404(client: TestClient) -> None:
+    resp = client.delete("/api/pedidos/999")
+    assert resp.status_code == 404
