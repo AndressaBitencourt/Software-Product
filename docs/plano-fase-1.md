@@ -1,14 +1,25 @@
-# Fase 1 — Sistema de Pedidos da Hamburgueria — Implementation Plan
+# Fase 1 — Sistema de Pedidos da Hamburgueria — Plano de implementação
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+Este é o plano que montei para me organizar antes de codar a Fase 1. Quebrei
+o trabalho em tarefas pequenas, cada uma com os arquivos que ela mexe, o que
+ela precisa e o que ela entrega, e uma lista de passos (`- [ ]`) que fui
+marcando conforme terminava.
 
-**Goal:** Entregar um app web funcional (front + back + banco) com CRUD completo de pedidos de uma hamburgueria, rodável em macOS e Windows.
+**Objetivo:** entregar um app web funcional (front + back + banco) com CRUD
+completo de pedidos de uma hamburgueria, rodável em macOS e Windows.
 
-**Architecture:** Back-end FastAPI expõe uma API REST sob `/api`; SQLAlchemy 2.x mapeia três tabelas (`produto`, `pedido`, `item_pedido`) num arquivo SQLite. O mesmo processo FastAPI serve o front-end estático (HTML/CSS/JS puro) na raiz `/`. O front consome a API via `fetch` e re-renderiza a tela sem recarregar. Camadas isoladas: `models` (banco) → `schemas` (contrato HTTP) → `crud` (regras + acesso a dados) → `serializers` (monta as respostas com campos calculados) → `routers` (traduz HTTP).
+**Arquitetura:** o back-end FastAPI expõe uma API REST sob `/api`; o SQLAlchemy
+2.x mapeia três tabelas (`produto`, `pedido`, `item_pedido`) num arquivo SQLite.
+O mesmo processo FastAPI serve o front-end estático (HTML/CSS/JS puro) na raiz
+`/`. O front consome a API via `fetch` e re-renderiza a tela sem recarregar.
+Separei em camadas: `models` (banco) → `schemas` (contrato HTTP) → `crud`
+(regras + acesso a dados) → `serializers` (monta as respostas com campos
+calculados) → `routers` (traduz HTTP).
 
-**Tech Stack:** Python 3.12, FastAPI, SQLAlchemy 2.x, SQLite, Pydantic v2, pytest + httpx (TestClient), Docker + docker-compose.
+**Stack:** Python 3.12, FastAPI, SQLAlchemy 2.x, SQLite, Pydantic v2,
+pytest + httpx (TestClient), Docker + docker-compose.
 
-## Global Constraints
+## Regras que segui
 
 - Python **3.12**; todo o back-end em `backend/`, front em `frontend/`.
 - Banco: **SQLite** via SQLAlchemy ORM. Nada de SQL cru fora do ORM. Sem serviço externo.
@@ -17,9 +28,9 @@
 - `preco_unitario` e `total` são **sempre** calculados no servidor; valor de preço vindo do cliente é ignorado.
 - Datas em UTC, formato ISO-8601.
 - Front-end sem build, sem Node, sem framework, sem CDN — só arquivos estáticos servidos pelo FastAPI.
-- Todo o trabalho da Fase 1 vai na branch `fase-1` (criada no Task 1), com um commit por passo de "Commit".
+- Todo o trabalho da Fase 1 vai na branch `fase-1` (criada na Tarefa 1), com um commit por passo de "Commit".
 - Cada teste roda com: `cd backend && pytest`.
-- Escopo travado: **só o que está neste plano**. Sem CRUD de produtos, sem mudança de status, sem login, sem relatórios (fases 2–5).
+- Escopo travado: **só o que está neste plano**. Sem CRUD de produtos, sem mudança de status, sem login, sem relatórios (fases 2–3).
 
 ---
 
@@ -59,9 +70,9 @@ README.md
 
 ---
 
-## Task 1: Scaffold + banco + modelos + health
+## Tarefa 1: Scaffold + banco + modelos + health
 
-**Files:**
+**Arquivos:**
 - Create: `backend/pytest.ini`
 - Create: `backend/requirements.txt`
 - Create: `backend/app/__init__.py` (vazio)
@@ -71,9 +82,9 @@ README.md
 - Create: `backend/tests/conftest.py`
 - Create: `backend/tests/test_health.py`
 
-**Interfaces:**
-- Consumes: nada.
-- Produces:
+**O que usa e o que entrega:**
+- Usa: nada.
+- Entrega:
   - `app.database.Base` — declarative base.
   - `app.database.engine` — Engine SQLite do processo real.
   - `app.database.SessionLocal` — factory de `Session`.
@@ -87,13 +98,13 @@ README.md
   - `app.main.app` — instância default (`create_app()`), usada por `uvicorn app.main:app`.
   - Fixtures pytest: `db_session` (Session em SQLite `:memory:` com todas as tabelas criadas e `PRAGMA foreign_keys=ON`) e `client` (`TestClient` cujo `get_db` devolve `db_session`).
 
-- [ ] **Step 1: Criar a branch de trabalho**
+- [ ] **Passo 1: Criar a branch de trabalho**
 
 ```bash
 git checkout -b fase-1
 ```
 
-- [ ] **Step 2: `backend/requirements.txt`**
+- [ ] **Passo 2: `backend/requirements.txt`**
 
 ```
 fastapi==0.115.6
@@ -104,7 +115,7 @@ pytest==8.3.4
 httpx==0.28.1
 ```
 
-- [ ] **Step 3: `backend/pytest.ini`**
+- [ ] **Passo 3: `backend/pytest.ini`**
 
 ```ini
 [pytest]
@@ -112,11 +123,11 @@ pythonpath = .
 testpaths = tests
 ```
 
-- [ ] **Step 4: `backend/app/__init__.py`**
+- [ ] **Passo 4: `backend/app/__init__.py`**
 
 Arquivo vazio (marca `app` como pacote).
 
-- [ ] **Step 5: `backend/app/database.py`**
+- [ ] **Passo 5: `backend/app/database.py`**
 
 ```python
 import os
@@ -155,7 +166,7 @@ def get_db() -> Iterator[Session]:
         db.close()
 ```
 
-- [ ] **Step 6: `backend/app/models.py`**
+- [ ] **Passo 6: `backend/app/models.py`**
 
 ```python
 from __future__ import annotations
@@ -220,7 +231,7 @@ class ItemPedido(Base):
     produto: Mapped["Produto"] = relationship(lazy="joined")
 ```
 
-- [ ] **Step 7: `backend/app/main.py`**
+- [ ] **Passo 7: `backend/app/main.py`**
 
 ```python
 import os
@@ -282,9 +293,9 @@ app = create_app()
 Notas:
 - `from app import models` no topo garante que `Base.metadata` conhece as três tabelas antes de qualquer `create_all` — sem isso, `uvicorn app.main:app` subiria com um banco sem tabelas.
 - Criação de tabelas + seed acontecem **só no `lifespan`** (startup do servidor). Importar `app.main` (o que os testes fazem) não toca em disco nem em banco.
-- `from app.seed import ...` fica dentro de `inicializar_banco` de propósito: `seed.py` só existe a partir do Task 2, e nada chama `inicializar_banco` antes disso (a fixture `client` usa `inicializar=False`). **Não criar stub de `seed.py` no Task 1.**
+- `from app.seed import ...` fica dentro de `inicializar_banco` de propósito: `seed.py` só existe a partir do Tarefa 2, e nada chama `inicializar_banco` antes disso (a fixture `client` usa `inicializar=False`). **Não criar stub de `seed.py` no Tarefa 1.**
 
-- [ ] **Step 8: `backend/tests/conftest.py`**
+- [ ] **Passo 8: `backend/tests/conftest.py`**
 
 ```python
 from collections.abc import Iterator
@@ -338,7 +349,7 @@ def client(db_session: Session) -> Iterator[TestClient]:
     app.dependency_overrides.clear()
 ```
 
-- [ ] **Step 9: `backend/tests/test_health.py` (teste que falha)**
+- [ ] **Passo 9: `backend/tests/test_health.py` (teste que falha)**
 
 ```python
 from fastapi.testclient import TestClient
@@ -365,17 +376,17 @@ def test_modelos_criam_e_consultam(db_session: Session) -> None:
     assert achado.disponivel is True
 ```
 
-- [ ] **Step 10: Rodar e ver falhar**
+- [ ] **Passo 10: Rodar e ver falhar**
 
-Run: `cd backend && pip install -r requirements.txt && pytest -v`
-Expected: coleta falha ou os testes falham (`ModuleNotFoundError` / arquivos ausentes) até todos os arquivos acima existirem. Depois de criados, deve **passar**.
+Rodo: `cd backend && pip install -r requirements.txt && pytest -v`
+Espero: coleta falha ou os testes falham (`ModuleNotFoundError` / arquivos ausentes) até todos os arquivos acima existirem. Depois de criados, deve **passar**.
 
-- [ ] **Step 11: Rodar e ver passar**
+- [ ] **Passo 11: Rodar e ver passar**
 
-Run: `cd backend && pytest -v`
-Expected: `test_health_ok` e `test_modelos_criam_e_consultam` PASS.
+Rodo: `cd backend && pytest -v`
+Espero: `test_health_ok` e `test_modelos_criam_e_consultam` PASS.
 
-- [ ] **Step 12: Commit**
+- [ ] **Passo 12: Commit**
 
 ```bash
 git add backend/
@@ -384,21 +395,21 @@ git commit -m "feat: scaffold do backend, modelos ORM e endpoint /api/health"
 
 ---
 
-## Task 2: Seed do cardápio
+## Tarefa 2: Seed do cardápio
 
-**Files:**
+**Arquivos:**
 - Create: `backend/app/seed.py`
 - Create: `backend/tests/test_produtos.py` (só a parte de seed neste task)
 - Modify: `backend/tests/conftest.py` (adicionar seed à fixture `client`)
 
-**Interfaces:**
-- Consumes: `app.models.Produto`, fixture `db_session`, fixture `client`.
-- Produces:
+**O que usa e o que entrega:**
+- Usa: `app.models.Produto`, fixture `db_session`, fixture `client`.
+- Entrega:
   - `app.seed.CARDAPIO_INICIAL: list[dict]` — 8 itens (`nome`, `descricao`, `preco: Decimal`, `categoria`).
   - `app.seed.seed_cardapio(db: Session) -> int` — insere os 8 itens **se a tabela estiver vazia**; devolve quantos inseriu (0 se já havia).
   - A fixture `client` passa a ter o cardápio de 8 itens carregado (ids 1..8 na ordem de `CARDAPIO_INICIAL`).
 
-- [ ] **Step 1: `backend/tests/test_produtos.py` (teste que falha)**
+- [ ] **Passo 1: `backend/tests/test_produtos.py` (teste que falha)**
 
 ```python
 from sqlalchemy.orm import Session
@@ -429,12 +440,12 @@ def test_cardapio_inicial_tem_quatro_categorias(db_session: Session) -> None:
     }
 ```
 
-- [ ] **Step 2: Rodar e ver falhar**
+- [ ] **Passo 2: Rodar e ver falhar**
 
-Run: `cd backend && pytest tests/test_produtos.py -v`
-Expected: FAIL — `ModuleNotFoundError: No module named 'app.seed'`.
+Rodo: `cd backend && pytest tests/test_produtos.py -v`
+Espero: FAIL — `ModuleNotFoundError: No module named 'app.seed'`.
 
-- [ ] **Step 3: `backend/app/seed.py`**
+- [ ] **Passo 3: `backend/app/seed.py`**
 
 ```python
 from decimal import Decimal
@@ -473,7 +484,7 @@ def seed_cardapio(db: Session) -> int:
     return len(CARDAPIO_INICIAL)
 ```
 
-- [ ] **Step 4: Ligar o seed na fixture `client`**
+- [ ] **Passo 4: Ligar o seed na fixture `client`**
 
 Em `backend/tests/conftest.py`, dentro da fixture `client`, logo após `app = create_app(...)` e antes do `TestClient`, adicionar:
 
@@ -483,12 +494,12 @@ Em `backend/tests/conftest.py`, dentro da fixture `client`, logo após `app = cr
     seed_cardapio(db_session)
 ```
 
-- [ ] **Step 5: Rodar e ver passar**
+- [ ] **Passo 5: Rodar e ver passar**
 
-Run: `cd backend && pytest -v`
-Expected: todos os testes de `test_health.py` e `test_produtos.py` PASS.
+Rodo: `cd backend && pytest -v`
+Espero: todos os testes de `test_health.py` e `test_produtos.py` PASS.
 
-- [ ] **Step 6: Commit**
+- [ ] **Passo 6: Commit**
 
 ```bash
 git add backend/
@@ -497,9 +508,9 @@ git commit -m "feat: seed idempotente do cardapio com 8 itens"
 
 ---
 
-## Task 3: Schemas + endpoints de leitura do cardápio
+## Tarefa 3: Schemas + endpoints de leitura do cardápio
 
-**Files:**
+**Arquivos:**
 - Create: `backend/app/schemas.py`
 - Create: `backend/app/crud.py`
 - Create: `backend/app/routers/__init__.py` (vazio)
@@ -507,9 +518,9 @@ git commit -m "feat: seed idempotente do cardapio com 8 itens"
 - Modify: `backend/app/main.py` (incluir o router de produtos)
 - Modify: `backend/tests/test_produtos.py` (adicionar testes de API)
 
-**Interfaces:**
-- Consumes: `app.models`, `app.database.get_db`, fixture `client`.
-- Produces:
+**O que usa e o que entrega:**
+- Usa: `app.models`, `app.database.get_db`, fixture `client`.
+- Entrega:
   - `app.schemas.Money` — `Annotated[Decimal, PlainSerializer(-> "0.00")]`.
   - `app.schemas.ProdutoOut(id, nome, descricao, preco, categoria, disponivel)` (`from_attributes=True`).
   - `app.crud.RegraNegocioError(Exception)` com atributo `.mensagem: str`.
@@ -518,7 +529,7 @@ git commit -m "feat: seed idempotente do cardapio com 8 itens"
   - `app.routers.produtos.router` — `APIRouter(prefix="/api/produtos")`.
   - Rotas: `GET /api/produtos?incluir_indisponiveis=<bool>` e `GET /api/produtos/{produto_id}`.
 
-- [ ] **Step 1: Testes de API (que falham)**
+- [ ] **Passo 1: Testes de API (que falham)**
 
 Adicionar ao fim de `backend/tests/test_produtos.py`:
 
@@ -582,12 +593,12 @@ def test_get_produto_inexistente_404(client: TestClient) -> None:
 
 Remover a função-rascunho `test_get_produtos_esconde_indisponivel_por_padrao` — foi substituída por `test_get_produtos_incluir_indisponiveis`. (Não deixar rascunho no arquivo.)
 
-- [ ] **Step 2: Rodar e ver falhar**
+- [ ] **Passo 2: Rodar e ver falhar**
 
-Run: `cd backend && pytest tests/test_produtos.py -v`
-Expected: FAIL — `No module named 'app.schemas'` / 404 nas rotas novas.
+Rodo: `cd backend && pytest tests/test_produtos.py -v`
+Espero: FAIL — `No module named 'app.schemas'` / 404 nas rotas novas.
 
-- [ ] **Step 3: `backend/app/schemas.py`**
+- [ ] **Passo 3: `backend/app/schemas.py`**
 
 ```python
 from datetime import datetime
@@ -652,7 +663,7 @@ class PedidoResumo(BaseModel):
     criado_em: datetime
 ```
 
-- [ ] **Step 4: `backend/app/crud.py`**
+- [ ] **Passo 4: `backend/app/crud.py`**
 
 ```python
 from sqlalchemy import select
@@ -755,13 +766,13 @@ def excluir_pedido(db: Session, pedido_id: int) -> bool:
     return True
 ```
 
-Nota: `crud.py` já traz todas as funções de pedido — os Tasks 4–7 só ligam os endpoints. Isso evita reescrever o arquivo a cada task.
+Nota: `crud.py` já traz todas as funções de pedido — os Tarefas 4–7 só ligam os endpoints. Isso evita reescrever o arquivo a cada task.
 
-- [ ] **Step 5: `backend/app/routers/__init__.py`**
+- [ ] **Passo 5: `backend/app/routers/__init__.py`**
 
 Arquivo vazio.
 
-- [ ] **Step 6: `backend/app/routers/produtos.py`**
+- [ ] **Passo 6: `backend/app/routers/produtos.py`**
 
 ```python
 from fastapi import APIRouter, Depends, HTTPException
@@ -788,7 +799,7 @@ def detalhar(produto_id: int, db: Session = Depends(get_db)):
     return produto
 ```
 
-- [ ] **Step 7: Registrar o router em `backend/app/main.py`**
+- [ ] **Passo 7: Registrar o router em `backend/app/main.py`**
 
 Depois da definição de `health`, antes do bloco `if FRONTEND_DIR.is_dir()`:
 
@@ -798,12 +809,12 @@ Depois da definição de `health`, antes do bloco `if FRONTEND_DIR.is_dir()`:
     app.include_router(produtos.router)
 ```
 
-- [ ] **Step 8: Rodar e ver passar**
+- [ ] **Passo 8: Rodar e ver passar**
 
-Run: `cd backend && pytest -v`
-Expected: todos PASS (health + produtos).
+Rodo: `cd backend && pytest -v`
+Espero: todos PASS (health + produtos).
 
-- [ ] **Step 9: Commit**
+- [ ] **Passo 9: Commit**
 
 ```bash
 git add backend/
@@ -812,23 +823,23 @@ git commit -m "feat: schemas, camada crud e leitura do cardapio via /api/produto
 
 ---
 
-## Task 4: Criar pedido — `POST /api/pedidos`
+## Tarefa 4: Criar pedido — `POST /api/pedidos`
 
-**Files:**
+**Arquivos:**
 - Create: `backend/app/serializers.py`
 - Create: `backend/app/routers/pedidos.py`
 - Modify: `backend/app/main.py` (incluir o router de pedidos)
 - Create: `backend/tests/test_pedidos.py`
 
-**Interfaces:**
-- Consumes: `app.crud` (`criar_pedido`, `RegraNegocioError`), `app.schemas`, `app.models`.
-- Produces:
+**O que usa e o que entrega:**
+- Usa: `app.crud` (`criar_pedido`, `RegraNegocioError`), `app.schemas`, `app.models`.
+- Entrega:
   - `app.serializers.pedido_para_out(pedido: models.Pedido) -> schemas.PedidoOut` — calcula `subtotal` por item e `total`.
   - `app.serializers.pedido_para_resumo(pedido: models.Pedido) -> schemas.PedidoResumo` — `quantidade_itens = soma das quantidades`, `total` calculado.
   - `app.routers.pedidos.router` — `APIRouter(prefix="/api/pedidos")`.
   - Rota `POST /api/pedidos` → 201 + `PedidoOut`; `RegraNegocioError` → 400 `{"detail": ...}`; corpo inválido → 422.
 
-- [ ] **Step 1: `backend/app/serializers.py`**
+- [ ] **Passo 1: `backend/app/serializers.py`**
 
 ```python
 from decimal import Decimal
@@ -877,7 +888,7 @@ def pedido_para_resumo(pedido: models.Pedido) -> schemas.PedidoResumo:
     )
 ```
 
-- [ ] **Step 2: `backend/tests/test_pedidos.py` (testes que falham)**
+- [ ] **Passo 2: `backend/tests/test_pedidos.py` (testes que falham)**
 
 ```python
 from fastapi.testclient import TestClient
@@ -953,12 +964,12 @@ def test_criar_pedido_produto_indisponivel_400(client: TestClient, db_session) -
     assert "indisponível" in resp.json()["detail"]
 ```
 
-- [ ] **Step 3: Rodar e ver falhar**
+- [ ] **Passo 3: Rodar e ver falhar**
 
-Run: `cd backend && pytest tests/test_pedidos.py -v`
-Expected: FAIL — rota `POST /api/pedidos` não existe (404) / `No module named 'app.serializers'`.
+Rodo: `cd backend && pytest tests/test_pedidos.py -v`
+Espero: FAIL — rota `POST /api/pedidos` não existe (404) / `No module named 'app.serializers'`.
 
-- [ ] **Step 4: `backend/app/routers/pedidos.py`**
+- [ ] **Passo 4: `backend/app/routers/pedidos.py`**
 
 ```python
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -981,7 +992,7 @@ def criar(dados: schemas.PedidoIn, db: Session = Depends(get_db)):
     return serializers.pedido_para_out(pedido)
 ```
 
-- [ ] **Step 5: Registrar o router em `backend/app/main.py`**
+- [ ] **Passo 5: Registrar o router em `backend/app/main.py`**
 
 Junto do `include_router(produtos.router)`:
 
@@ -991,12 +1002,12 @@ Junto do `include_router(produtos.router)`:
     app.include_router(pedidos.router)
 ```
 
-- [ ] **Step 6: Rodar e ver passar**
+- [ ] **Passo 6: Rodar e ver passar**
 
-Run: `cd backend && pytest -v`
-Expected: todos PASS.
+Rodo: `cd backend && pytest -v`
+Espero: todos PASS.
 
-- [ ] **Step 7: Commit**
+- [ ] **Passo 7: Commit**
 
 ```bash
 git add backend/
@@ -1005,19 +1016,19 @@ git commit -m "feat: criacao de pedido via POST /api/pedidos com calculo de tota
 
 ---
 
-## Task 5: Listar e detalhar pedidos — `GET /api/pedidos` e `GET /api/pedidos/{id}`
+## Tarefa 5: Listar e detalhar pedidos — `GET /api/pedidos` e `GET /api/pedidos/{id}`
 
-**Files:**
+**Arquivos:**
 - Modify: `backend/app/routers/pedidos.py`
 - Modify: `backend/tests/test_pedidos.py`
 
-**Interfaces:**
-- Consumes: `app.crud.listar_pedidos`, `app.crud.obter_pedido`, `app.serializers`.
-- Produces:
+**O que usa e o que entrega:**
+- Usa: `app.crud.listar_pedidos`, `app.crud.obter_pedido`, `app.serializers`.
+- Entrega:
   - `GET /api/pedidos` → `list[PedidoResumo]`, ordenado do mais novo para o mais antigo.
   - `GET /api/pedidos/{pedido_id}` → `PedidoOut`; inexistente → 404 `{"detail": "Pedido não encontrado."}`.
 
-- [ ] **Step 1: Testes que falham**
+- [ ] **Passo 1: Testes que falham**
 
 Adicionar a `backend/tests/test_pedidos.py`:
 
@@ -1060,12 +1071,12 @@ def test_detalhar_pedido_inexistente_404(client: TestClient) -> None:
     assert resp.json()["detail"] == "Pedido não encontrado."
 ```
 
-- [ ] **Step 2: Rodar e ver falhar**
+- [ ] **Passo 2: Rodar e ver falhar**
 
-Run: `cd backend && pytest tests/test_pedidos.py -k "listar or detalhar" -v`
-Expected: FAIL — rotas GET não existem (405/404).
+Rodo: `cd backend && pytest tests/test_pedidos.py -k "listar or detalhar" -v`
+Espero: FAIL — rotas GET não existem (405/404).
 
-- [ ] **Step 3: Implementar as rotas**
+- [ ] **Passo 3: Implementar as rotas**
 
 Adicionar a `backend/app/routers/pedidos.py`:
 
@@ -1085,12 +1096,12 @@ def detalhar(pedido_id: int, db: Session = Depends(get_db)):
     return serializers.pedido_para_out(pedido)
 ```
 
-- [ ] **Step 4: Rodar e ver passar**
+- [ ] **Passo 4: Rodar e ver passar**
 
-Run: `cd backend && pytest -v`
-Expected: todos PASS.
+Rodo: `cd backend && pytest -v`
+Espero: todos PASS.
 
-- [ ] **Step 5: Commit**
+- [ ] **Passo 5: Commit**
 
 ```bash
 git add backend/
@@ -1099,19 +1110,19 @@ git commit -m "feat: listagem e detalhe de pedidos"
 
 ---
 
-## Task 6: Editar pedido — `PUT /api/pedidos/{id}`
+## Tarefa 6: Editar pedido — `PUT /api/pedidos/{id}`
 
-**Files:**
+**Arquivos:**
 - Modify: `backend/app/routers/pedidos.py`
 - Modify: `backend/tests/test_pedidos.py`
 
-**Interfaces:**
-- Consumes: `app.crud.atualizar_pedido` (já existe desde o Task 3), `app.serializers`.
-- Produces:
+**O que usa e o que entrega:**
+- Usa: `app.crud.atualizar_pedido` (já existe desde o Tarefa 3), `app.serializers`.
+- Entrega:
   - `PUT /api/pedidos/{pedido_id}` com corpo `PedidoIn` → substitui `cliente_nome`, `observacao` e **a lista inteira de itens**, recalcula `total`, atualiza `atualizado_em`; devolve `PedidoOut`.
   - Pedido inexistente → 404. `RegraNegocioError` → 400. Corpo inválido → 422.
 
-- [ ] **Step 1: Testes que falham**
+- [ ] **Passo 1: Testes que falham**
 
 Adicionar a `backend/tests/test_pedidos.py`:
 
@@ -1150,12 +1161,12 @@ def test_editar_pedido_sem_itens_400(client: TestClient) -> None:
     assert resp.status_code == 400
 ```
 
-- [ ] **Step 2: Rodar e ver falhar**
+- [ ] **Passo 2: Rodar e ver falhar**
 
-Run: `cd backend && pytest tests/test_pedidos.py -k editar -v`
-Expected: FAIL — rota PUT não existe (405).
+Rodo: `cd backend && pytest tests/test_pedidos.py -k editar -v`
+Espero: FAIL — rota PUT não existe (405).
 
-- [ ] **Step 3: Implementar a rota**
+- [ ] **Passo 3: Implementar a rota**
 
 Adicionar a `backend/app/routers/pedidos.py`:
 
@@ -1173,12 +1184,12 @@ def atualizar(
     return serializers.pedido_para_out(pedido)
 ```
 
-- [ ] **Step 4: Rodar e ver passar**
+- [ ] **Passo 4: Rodar e ver passar**
 
-Run: `cd backend && pytest -v`
-Expected: todos PASS.
+Rodo: `cd backend && pytest -v`
+Espero: todos PASS.
 
-- [ ] **Step 5: Commit**
+- [ ] **Passo 5: Commit**
 
 ```bash
 git add backend/
@@ -1187,18 +1198,18 @@ git commit -m "feat: edicao de pedido via PUT com substituicao de itens"
 
 ---
 
-## Task 7: Excluir pedido — `DELETE /api/pedidos/{id}`
+## Tarefa 7: Excluir pedido — `DELETE /api/pedidos/{id}`
 
-**Files:**
+**Arquivos:**
 - Modify: `backend/app/routers/pedidos.py`
 - Modify: `backend/tests/test_pedidos.py`
 
-**Interfaces:**
-- Consumes: `app.crud.excluir_pedido` (já existe desde o Task 3).
-- Produces:
+**O que usa e o que entrega:**
+- Usa: `app.crud.excluir_pedido` (já existe desde o Tarefa 3).
+- Entrega:
   - `DELETE /api/pedidos/{pedido_id}` → 204 sem corpo; some da listagem; remove os `ItemPedido` associados (cascade ORM). Inexistente → 404.
 
-- [ ] **Step 1: Testes que falham**
+- [ ] **Passo 1: Testes que falham**
 
 Adicionar a `backend/tests/test_pedidos.py`:
 
@@ -1231,12 +1242,12 @@ def test_excluir_pedido_inexistente_404(client: TestClient) -> None:
     assert resp.status_code == 404
 ```
 
-- [ ] **Step 2: Rodar e ver falhar**
+- [ ] **Passo 2: Rodar e ver falhar**
 
-Run: `cd backend && pytest tests/test_pedidos.py -k excluir -v`
-Expected: FAIL — rota DELETE não existe (405).
+Rodo: `cd backend && pytest tests/test_pedidos.py -k excluir -v`
+Espero: FAIL — rota DELETE não existe (405).
 
-- [ ] **Step 3: Implementar a rota**
+- [ ] **Passo 3: Implementar a rota**
 
 Adicionar a `backend/app/routers/pedidos.py`:
 
@@ -1247,12 +1258,12 @@ def excluir(pedido_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Pedido não encontrado.")
 ```
 
-- [ ] **Step 4: Rodar toda a suíte e conferir os 16+ casos**
+- [ ] **Passo 4: Rodar toda a suíte e conferir os 16+ casos**
 
-Run: `cd backend && pytest -v`
-Expected: TODOS PASS. Conferir que estão cobertos: health; seed x3; cardápio (lista, esconde indisponível, inclui indisponível, por id, 404); criar pedido (válido, sem itens, produto inexistente, quantidade 0, sem cliente, indisponível); listar; detalhar; detalhar 404; editar (recalcula, 404, sem itens); excluir (204, cascata, 404).
+Rodo: `cd backend && pytest -v`
+Espero: TODOS PASS. Conferir que estão cobertos: health; seed x3; cardápio (lista, esconde indisponível, inclui indisponível, por id, 404); criar pedido (válido, sem itens, produto inexistente, quantidade 0, sem cliente, indisponível); listar; detalhar; detalhar 404; editar (recalcula, 404, sem itens); excluir (204, cascata, 404).
 
-- [ ] **Step 5: Commit**
+- [ ] **Passo 5: Commit**
 
 ```bash
 git add backend/
@@ -1261,19 +1272,19 @@ git commit -m "feat: exclusao de pedido com cascade nos itens"
 
 ---
 
-## Task 8: Front-end — página única de pedidos
+## Tarefa 8: Front-end — página única de pedidos
 
-**Files:**
+**Arquivos:**
 - Create: `frontend/index.html`
 - Create: `frontend/styles.css`
 - Create: `frontend/app.js`
 - Create: `backend/tests/test_frontend.py`
 
-**Interfaces:**
-- Consumes: a API `/api/produtos` e `/api/pedidos` já pronta; `create_app` já monta `frontend/` em `/` quando a pasta existe.
-- Produces: página em `/` que cria, lista, vê, edita e exclui pedidos via `fetch`, sem recarregar; faixa de mensagem para sucesso/erro (lê `detail`).
+**O que usa e o que entrega:**
+- Usa: a API `/api/produtos` e `/api/pedidos` já pronta; `create_app` já monta `frontend/` em `/` quando a pasta existe.
+- Entrega: página em `/` que cria, lista, vê, edita e exclui pedidos via `fetch`, sem recarregar; faixa de mensagem para sucesso/erro (lê `detail`).
 
-- [ ] **Step 1: Teste que falha (smoke do estático)**
+- [ ] **Passo 1: Teste que falha (smoke do estático)**
 
 `backend/tests/test_frontend.py`:
 
@@ -1289,12 +1300,12 @@ def test_raiz_serve_o_index(client: TestClient) -> None:
     assert "app.js" in resp.text
 ```
 
-- [ ] **Step 2: Rodar e ver falhar**
+- [ ] **Passo 2: Rodar e ver falhar**
 
-Run: `cd backend && pytest tests/test_frontend.py -v`
-Expected: FAIL — `/` retorna 404 (pasta `frontend/` ainda não existe / sem `index.html`).
+Rodo: `cd backend && pytest tests/test_frontend.py -v`
+Espero: FAIL — `/` retorna 404 (pasta `frontend/` ainda não existe / sem `index.html`).
 
-- [ ] **Step 3: `frontend/index.html`**
+- [ ] **Passo 3: `frontend/index.html`**
 
 ```html
 <!doctype html>
@@ -1360,7 +1371,7 @@ Expected: FAIL — `/` retorna 404 (pasta `frontend/` ainda não existe / sem `i
 </html>
 ```
 
-- [ ] **Step 4: `frontend/styles.css`**
+- [ ] **Passo 4: `frontend/styles.css`**
 
 ```css
 * { box-sizing: border-box; }
@@ -1455,7 +1466,7 @@ th, td { border: 1px solid #e6ddd0; padding: 8px; text-align: left; font-size: 0
 }
 ```
 
-- [ ] **Step 5: `frontend/app.js`**
+- [ ] **Passo 5: `frontend/app.js`**
 
 ```javascript
 "use strict";
@@ -1703,12 +1714,12 @@ $("#btn-cancelar").addEventListener("click", sairModoEdicao);
 })();
 ```
 
-- [ ] **Step 6: Rodar o smoke test e ver passar**
+- [ ] **Passo 6: Rodar o smoke test e ver passar**
 
-Run: `cd backend && pytest -v`
-Expected: todos PASS, incluindo `test_raiz_serve_o_index`.
+Rodo: `cd backend && pytest -v`
+Espero: todos PASS, incluindo `test_raiz_serve_o_index`.
 
-- [ ] **Step 7: Teste manual no navegador**
+- [ ] **Passo 7: Teste manual no navegador**
 
 ```bash
 cd backend && uvicorn app.main:app --reload
@@ -1725,7 +1736,7 @@ Abrir `http://localhost:8000` e conferir:
 
 Parar o servidor (`Ctrl+C`). Apagar o `backend/app.db` gerado (`git status` deve ficar limpo — ele está no `.gitignore`).
 
-- [ ] **Step 8: Commit**
+- [ ] **Passo 8: Commit**
 
 ```bash
 git add frontend/ backend/tests/test_frontend.py
@@ -1734,19 +1745,19 @@ git commit -m "feat: pagina unica de pedidos (cardapio, carrinho, CRUD via fetch
 
 ---
 
-## Task 9: Docker, execução multiplataforma e README
+## Tarefa 9: Docker, execução multiplataforma e README
 
-**Files:**
+**Arquivos:**
 - Create: `Dockerfile`
 - Create: `docker-compose.yml`
 - Create: `.dockerignore`
 - Create: `README.md`
 
-**Interfaces:**
-- Consumes: `backend/` e `frontend/` prontos; `app.database` lê `DB_DIR` do ambiente; `app.main` lê `FRONTEND_DIR` do ambiente.
-- Produces: `docker compose up --build` sobe o app em `http://localhost:8000` em macOS e Windows, com o banco persistido num volume.
+**O que usa e o que entrega:**
+- Usa: `backend/` e `frontend/` prontos; `app.database` lê `DB_DIR` do ambiente; `app.main` lê `FRONTEND_DIR` do ambiente.
+- Entrega: `docker compose up --build` sobe o app em `http://localhost:8000` em macOS e Windows, com o banco persistido num volume.
 
-- [ ] **Step 1: `Dockerfile`**
+- [ ] **Passo 1: `Dockerfile`**
 
 ```dockerfile
 FROM python:3.12-slim
@@ -1769,7 +1780,7 @@ EXPOSE 8000
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
 ```
 
-- [ ] **Step 2: `docker-compose.yml`**
+- [ ] **Passo 2: `docker-compose.yml`**
 
 ```yaml
 services:
@@ -1786,7 +1797,7 @@ volumes:
   db-data:
 ```
 
-- [ ] **Step 3: `.dockerignore`**
+- [ ] **Passo 3: `.dockerignore`**
 
 ```
 **/__pycache__
@@ -1800,15 +1811,15 @@ venv
 docs
 ```
 
-- [ ] **Step 4: `README.md`**
+- [ ] **Passo 4: `README.md`**
 
 ```markdown
 # Software-Product — Sistema de Pedidos da Hamburgueria
 
-Trabalho de faculdade entregue em 5 fases. **Fase 1:** CRUD completo de pedidos
-com front-end, back-end e banco de dados.
+Este é o meu trabalho de faculdade, entregue em 3 fases. Na **Fase 1** eu fiz
+o CRUD completo de pedidos, com front-end, back-end e banco de dados.
 
-## Tecnologias
+## Tecnologias que usei
 
 - Back-end: Python 3.12 + FastAPI
 - Banco: SQLite (arquivo `app.db`) via SQLAlchemy
@@ -1871,24 +1882,22 @@ pytest -v
 ## Estrutura
 
 - `backend/app/` — API FastAPI (models, schemas, crud, serializers, routers)
-- `backend/tests/` — testes automatizados
+- `backend/tests/` — meus testes automatizados
 - `frontend/` — página única servida pelo próprio back-end
-- `docs/superpowers/` — spec e plano de implementação
+- `docs/` — o design e o plano de implementação que escrevi antes de codar
 
 ## Roadmap
 
-| Fase | Funcionalidade |
+| Fase | O que entra |
 |---|---|
 | 1 | CRUD de pedidos (esta entrega) |
-| 2 | Gestão de cardápio (CRUD de produtos) |
-| 3 | Fluxo de status do pedido + conta detalhada |
-| 4 | Login e perfis (cliente / atendente) |
-| 5 | Relatórios e dashboard |
+| 2 | Gestão de cardápio (CRUD de produtos) + fluxo de status do pedido + conta detalhada + tela de cozinha |
+| 3 | Login e perfis (cliente / atendente / admin) + relatórios e dashboard |
 ```
 
-- [ ] **Step 5: Validar o build Docker**
+- [ ] **Passo 5: Validar o build Docker**
 
-Run:
+Rodo:
 ```bash
 docker compose up --build -d
 curl -s http://localhost:8000/api/health
@@ -1896,14 +1905,14 @@ curl -s http://localhost:8000/ | grep -o "Hamburgueria — Pedidos"
 curl -s http://localhost:8000/api/produtos | head -c 120
 docker compose down
 ```
-Expected: `{"status":"ok"}`; a string do título; um JSON com produtos.
+Espero: `{"status":"ok"}`; a string do título; um JSON com produtos.
 
-- [ ] **Step 6: Rodar a suíte de novo (nada quebrou)**
+- [ ] **Passo 6: Rodar a suíte de novo (nada quebrou)**
 
-Run: `cd backend && pytest -v`
-Expected: todos PASS.
+Rodo: `cd backend && pytest -v`
+Espero: todos PASS.
 
-- [ ] **Step 7: Commit**
+- [ ] **Passo 7: Commit**
 
 ```bash
 git add Dockerfile docker-compose.yml .dockerignore README.md
@@ -1912,24 +1921,24 @@ git commit -m "chore: empacotamento Docker, README e execucao multiplataforma"
 
 ---
 
-## Task 10: Fechamento da Fase 1
+## Tarefa 10: Fechamento da Fase 1
 
-**Files:** nenhum novo — verificação e integração.
+**Arquivos:** nenhum novo — verificação e integração.
 
-- [ ] **Step 1: Verificação final**
+- [ ] **Passo 1: Verificação final**
 
-Run: `cd backend && pytest -v`
-Expected: 100% PASS.
+Rodo: `cd backend && pytest -v`
+Espero: 100% PASS.
 
-Conferир manualmente uma última vez pelo navegador (criar / ver / editar / excluir) usando `docker compose up` **ou** `uvicorn`.
+Confiro manualmente uma última vez pelo navegador (criar / ver / editar / excluir) usando `docker compose up` **ou** `uvicorn`.
 
-- [ ] **Step 2: Push da branch**
+- [ ] **Passo 2: Push da branch**
 
 ```bash
 git push -u origin fase-1
 ```
 
-- [ ] **Step 3: Abrir o Pull Request**
+- [ ] **Passo 3: Abrir o Pull Request**
 
 ```bash
 gh pr create --base main --head fase-1 \
@@ -1937,7 +1946,7 @@ gh pr create --base main --head fase-1 \
   --body "$(cat <<'EOF'
 ## Fase 1 — CRUD completo de pedidos
 
-Entrega da primeira das cinco fases.
+Primeira das três fases do trabalho.
 
 ### O que tem
 - API FastAPI sob `/api`: cardápio (leitura) e pedidos (POST, GET lista, GET detalhe, PUT, DELETE)
@@ -1950,43 +1959,44 @@ Entrega da primeira das cinco fases.
 ### Como testar
 `cd backend && pip install -r requirements.txt && pytest -v`
 ou `docker compose up --build` e abrir http://localhost:8000
-
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
 EOF
 )"
 ```
 
-- [ ] **Step 4: Avisar que a Fase 1 está pronta para revisão/merge**
+- [ ] **Passo 4: Marcar a Fase 1 como pronta para revisão/merge**
 
-O merge para `main` fica a critério de vocês (a próxima fase parte de `main` já com a Fase 1 mergeada).
+Depois de mergear na `main`, começo a Fase 2 a partir dela.
 
 ---
 
-## Self-Review (feito pelo autor do plano)
+## Conferência: o plano cobre o design?
 
-**1. Cobertura do spec:**
-- §2 stack → Tasks 1, 8, 9. ✔
-- §3 estrutura de pastas → seção "Estrutura de arquivos" + Tasks. ✔
-- §4 modelo de dados (Produto/Pedido/ItemPedido, seed 8 itens) → Tasks 1 e 2. ✔
-- §5 endpoints (health, produtos x2, pedidos x5) → Tasks 1, 3, 4, 5, 6, 7. ✔
-- §5 regras de negócio (≥1 item, quantidade ≥1, produto existe, indisponível, preço server-side, PUT substitui itens) → Task 4 (crud `_montar_itens`) e Task 6. ✔
-- §6 front-end (3 seções, sem reload, faixa de erro lendo `detail`) → Task 8. ✔
-- §7 tratamento de erros (422 Pydantic, 400/404 negócio, sessão por request) → `get_db` (Task 1), `RegraNegocioError` (Task 3), routers (Tasks 4–7). ✔
-- §8 testes (16 casos) → distribuídos nos Tasks 1–8; conferência explícita no Task 7 Step 4. ✔
-- §9 execução Docker + venv + `.gitignore` → Task 9 (o `.gitignore` já foi commitado no repo antes do plano). ✔
-- §10 fora de escopo → "Global Constraints" trava o escopo. ✔
-- §11 riscos (Money como string, volume do db) → `Money` no schema (Task 3), volume no compose (Task 9). ✔
+Antes de começar a implementar, revi o plano contra o meu documento de design
+para não deixar nada de fora.
 
-**2. Placeholders:** nenhum "TBD"/"TODO"; todo passo de código traz o código real. ✔
+**1. Cobertura do design:**
+- §2 stack → Tarefas 1, 8, 9. ✔
+- §3 estrutura de pastas → seção "Estrutura de arquivos" + tarefas. ✔
+- §4 modelo de dados (Produto/Pedido/ItemPedido, seed 8 itens) → Tarefas 1 e 2. ✔
+- §5 endpoints (health, produtos x2, pedidos x5) → Tarefas 1, 3, 4, 5, 6, 7. ✔
+- §5 regras de negócio (≥1 item, quantidade ≥1, produto existe, indisponível, preço server-side, PUT substitui itens) → Tarefa 4 (crud `_montar_itens`) e Tarefa 6. ✔
+- §6 front-end (3 seções, sem reload, faixa de erro lendo `detail`) → Tarefa 8. ✔
+- §7 tratamento de erros (422 Pydantic, 400/404 negócio, sessão por request) → `get_db` (Tarefa 1), `RegraNegocioError` (Tarefa 3), routers (Tarefas 4–7). ✔
+- §8 testes (16 casos) → distribuídos nas Tarefas 1–8; conferência explícita na Tarefa 7, Passo 4. ✔
+- §9 execução Docker + venv + `.gitignore` → Tarefa 9 (o `.gitignore` já estava commitado no repo antes do plano). ✔
+- §10 fora de escopo → a seção "Regras que segui" trava o escopo. ✔
+- §11 riscos (Money como string, volume do db) → `Money` no schema (Tarefa 3), volume no compose (Tarefa 9). ✔
 
-**3. Consistência de tipos:** `RegraNegocioError.mensagem`, `seed_cardapio(db) -> int`, `create_app(inicializar)` + `inicializar_banco()`, `pedido_para_out` / `pedido_para_resumo`, `Money` — nomes idênticos entre a definição (Tasks 1–4) e o uso (Tasks 4–8). `crud.py` é escrito inteiro no Task 3, então `atualizar_pedido`/`excluir_pedido` já existem quando os Tasks 6 e 7 ligam as rotas. ✔
+**2. Sem pontas soltas:** nenhum "TBD"/"TODO"; todo passo de código traz o código real. ✔
+
+**3. Consistência de tipos:** `RegraNegocioError.mensagem`, `seed_cardapio(db) -> int`, `create_app(inicializar)` + `inicializar_banco()`, `pedido_para_out` / `pedido_para_resumo`, `Money` — usei os mesmos nomes entre a definição (Tarefas 1–4) e o uso (Tarefas 4–8). Escrevo o `crud.py` inteiro na Tarefa 3, então `atualizar_pedido`/`excluir_pedido` já existem quando as Tarefas 6 e 7 ligam as rotas. ✔
 
 ---
 
 ## Apêndice — correções pós-revisão final da branch (commit `82b2ae5`)
 
-A revisão final da branch inteira (antes do merge) apontou itens que foram
-corrigidos numa única leva, além do que está descrito nos tasks acima:
+Quando revi a branch inteira antes do merge, achei alguns itens que corrigi
+numa única leva, além do que está descrito nas tarefas acima:
 
 1. **Datas em UTC no JSON.** `schemas.py` ganhou o tipo `UtcDatetime`
    (`Annotated[datetime, PlainSerializer(...)]`) que serializa como ISO-8601
@@ -2012,8 +2022,8 @@ corrigidos numa única leva, além do que está descrito nos tasks acima:
 
 Total de testes ao fim da Fase 1: **28**, todos passando, saída limpa.
 
-Itens menores adiados para a Fase 2 estão registrados no ledger do SDD
-(`.superpowers/sdd/2026-09-08-hamburgueria-fase-1/progress.md`, seção
-"FASE 2 BACKLOG"): escapar `innerHTML` no front, `raise ... from`,
-imports de router no escopo do módulo, `mkdir` no import de `database.py`,
-entre outros — nenhum bloqueia a entrega da Fase 1.
+Os itens menores que deixei para a Fase 2 estão anotados em
+[`backlog-fase-2.md`](backlog-fase-2.md): escapar `innerHTML` no front,
+`raise ... from`, mover os imports de router para o escopo do módulo, tirar o
+`mkdir` do import de `database.py`, entre outros — nenhum bloqueia a entrega
+da Fase 1.

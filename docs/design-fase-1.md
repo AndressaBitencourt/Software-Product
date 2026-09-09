@@ -1,26 +1,29 @@
 # Software-Product — Sistema de Pedidos de Hamburgueria
 
-## Documento de Design — Fase 1
+## Meu documento de design — Fase 1
 
 - **Data:** 2026-09-08
 - **Repositório:** `AndressaBitencourt/Software-Product` (público)
 - **Entrega:** trabalho de faculdade em 3 fases incrementais (era 5; ver seção 1)
 
+Escrevi este documento antes de começar a codar, para fechar o escopo da
+Fase 1 e registrar as decisões técnicas que tomei.
+
 ---
 
 ## 1. Visão geral do projeto
 
-Software web para uma hamburgueria gerenciar pedidos. Não é uma página
+Fiz um software web para uma hamburgueria gerenciar pedidos. Não é uma página
 estática: tem front-end, back-end e banco de dados, com dados dinâmicos
 manipulados via API.
 
-O projeto é entregue em **3 fases**. Cada fase adiciona funcionalidades
-por cima da base da fase anterior, sem quebrar o que já funciona. Cada fase
-tem seu próprio ciclo de design → plano → implementação → verificação.
+Dividi o projeto em **3 fases**. Cada fase adiciona funcionalidades por cima
+da base da anterior, sem quebrar o que já funciona. Para cada fase eu sigo o
+mesmo ciclo: design → plano → implementação → verificação.
 
-> Histórico: o projeto foi planejado em 5 fases; a faculdade depois pediu 3.
-> As 4 funcionalidades que restavam foram condensadas nas Fases 2 e 3
-> (decisão de 2026-09-08).
+> Histórico: eu tinha planejado o projeto em 5 fases; a faculdade depois pediu
+> 3. Condensei as 4 funcionalidades que restavam nas Fases 2 e 3 (decisão de
+> 2026-09-08).
 
 | Fase | Funcionalidade | Escopo resumido |
 |---|---|---|
@@ -34,7 +37,11 @@ Este documento cobre **apenas a Fase 1**.
 
 ## 2. Stack
 
-| Camada | Escolha | Justificativa |
+Escolhi ferramentas com pouca cerimônia de setup, para focar o tempo na
+funcionalidade e conseguir rodar o mesmo projeto no meu Mac e num PC com
+Windows.
+
+| Camada | Escolha | Por que escolhi |
 |---|---|---|
 | Backend | Python 3.12 + FastAPI | Sem etapa de build; poucas dependências; gera `/docs` (Swagger) automático para teste e demonstração. |
 | ORM | SQLAlchemy 2.x | Abstrai o banco; permite trocar SQLite por Postgres em fases futuras sem reescrever as queries. |
@@ -43,9 +50,9 @@ Este documento cobre **apenas a Fase 1**.
 | Testes | pytest + `TestClient` do FastAPI | Banco SQLite em memória isolado por teste. |
 | Execução multiplataforma | Docker + docker-compose; alternativa `venv` + `uvicorn` documentada no README | `docker compose up` roda igual em macOS e Windows. |
 
-**Descartado:** Flask + templates server-side (mistura front e back, sem API
-de testes automática); Postgres em container desde a Fase 1 (peso extra
-desnecessário para o escopo).
+**O que descartei:** Flask + templates server-side (mistura front e back e não
+me dá a API de testes automática); Postgres em container já na Fase 1 (peso
+extra que o escopo não pede).
 
 ---
 
@@ -81,12 +88,14 @@ Software-Product/
 ├─ .gitignore
 ├─ README.md
 └─ docs/
-   └─ superpowers/specs/2026-09-08-hamburgueria-fase-1-design.md
+   ├─ design-fase-1.md   (este documento)
+   ├─ plano-fase-1.md
+   └─ backlog-fase-2.md
 ```
 
-Cada módulo tem uma responsabilidade única: `models` descreve o banco,
+Deixei cada módulo com uma responsabilidade única: `models` descreve o banco,
 `schemas` descreve o contrato da API, `crud` acessa dados, `routers` traduz
-HTTP em chamadas de `crud`. Dá para entender e testar cada um isoladamente.
+HTTP em chamadas de `crud`. Assim consigo entender e testar cada um isoladamente.
 
 ---
 
