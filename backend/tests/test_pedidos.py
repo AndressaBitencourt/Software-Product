@@ -169,3 +169,38 @@ def test_excluir_pedido_remove_itens_em_cascata(
 def test_excluir_pedido_inexistente_404(client: TestClient) -> None:
     resp = client.delete("/api/pedidos/999")
     assert resp.status_code == 404
+
+
+def test_timestamps_saem_em_utc_com_z(client: TestClient) -> None:
+    corpo = client.post("/api/pedidos", json=PEDIDO_VALIDO).json()
+    assert corpo["criado_em"].endswith("Z")
+    assert corpo["atualizado_em"].endswith("Z")
+    lista = client.get("/api/pedidos").json()
+    assert lista[0]["criado_em"].endswith("Z")
+
+
+def test_preco_unitario_e_snapshot(client: TestClient, db_session) -> None:
+    from decimal import Decimal
+    from app import models
+
+    criado = client.post("/api/pedidos", json=PEDIDO_VALIDO).json()
+    db_session.get(models.Produto, 1).preco = Decimal("99.00")
+    db_session.commit()
+
+    depois = client.get(f"/api/pedidos/{criado['id']}").json()
+    assert depois["itens"][0]["preco_unitario"] == "18.00"
+    assert depois["total"] == "48.00"
+
+
+def test_editar_pedido_remove_itens_antigos(client: TestClient, db_session) -> None:
+    from app import models
+
+    criado = client.post("/api/pedidos", json=PEDIDO_VALIDO).json()
+    assert db_session.query(models.ItemPedido).count() == 2
+
+    resp = client.put(
+        f"/api/pedidos/{criado['id']}",
+        json={"cliente_nome": "M", "itens": [{"produto_id": 3, "quantidade": 2}]},
+    )
+    assert resp.status_code == 200
+    assert db_session.query(models.ItemPedido).count() == 1

@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from decimal import Decimal
 from typing import Annotated
 
@@ -7,6 +7,18 @@ from pydantic import BaseModel, ConfigDict, Field, PlainSerializer
 Money = Annotated[
     Decimal, PlainSerializer(lambda v: f"{Decimal(v):.2f}", return_type=str)
 ]
+
+
+def _utc_iso(v: datetime) -> str:
+    aware = (
+        v.replace(tzinfo=timezone.utc)
+        if v.tzinfo is None
+        else v.astimezone(timezone.utc)
+    )
+    return aware.isoformat().replace("+00:00", "Z")
+
+
+UtcDatetime = Annotated[datetime, PlainSerializer(_utc_iso, return_type=str)]
 
 
 class ProdutoOut(BaseModel):
@@ -45,8 +57,8 @@ class PedidoOut(BaseModel):
     cliente_nome: str
     observacao: str | None
     status: str
-    criado_em: datetime
-    atualizado_em: datetime
+    criado_em: UtcDatetime
+    atualizado_em: UtcDatetime
     itens: list[ItemPedidoOut]
     total: Money
 
@@ -57,4 +69,4 @@ class PedidoResumo(BaseModel):
     status: str
     quantidade_itens: int
     total: Money
-    criado_em: datetime
+    criado_em: UtcDatetime

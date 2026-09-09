@@ -65,7 +65,9 @@ def criar_pedido(db: Session, dados: schemas.PedidoIn) -> models.Pedido:
 
 
 def listar_pedidos(db: Session) -> list[models.Pedido]:
-    stmt = select(models.Pedido).order_by(models.Pedido.criado_em.desc())
+    stmt = select(models.Pedido).order_by(
+        models.Pedido.criado_em.desc(), models.Pedido.id.desc()
+    )
     return list(db.scalars(stmt))
 
 
