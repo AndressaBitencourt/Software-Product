@@ -1,7 +1,10 @@
 @echo off
-REM Sobe o app da hamburgueria. Para rodar os testes: run.bat test
+REM Sobe o app da hamburgueria e abre o navegador. Para rodar os testes: run.bat test
 setlocal enabledelayedexpansion
 cd /d "%~dp0backend"
+
+set "PORT=8000"
+set "URL=http://localhost:%PORT%"
 
 REM 1. Encontra o Python
 set "PY="
@@ -41,9 +44,13 @@ if /I "%~1"=="test" (
 
 echo.
 echo ================================================================
-echo   App no ar:  http://localhost:8000      ^(API / Swagger em /docs^)
+echo   App no ar:  %URL%      ^(API / Swagger em /docs^)
 echo   Para parar: feche esta janela ou aperte Ctrl+C
 echo ================================================================
 echo.
-"%VENV_PY%" -m uvicorn app.main:app --port 8000
+
+REM Abre o navegador assim que o servidor subir (~3s)
+start "" /b cmd /c "timeout /t 3 /nobreak >nul & start "" %URL%"
+
+"%VENV_PY%" -m uvicorn app.main:app --port %PORT%
 pause

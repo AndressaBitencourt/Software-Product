@@ -1,8 +1,10 @@
 #!/usr/bin/env bash
-# Sobe o app da hamburgueria. Para rodar os testes em vez do servidor: ./run.sh test
+# Sobe o app da hamburgueria e abre o navegador. Para rodar os testes: ./run.sh test
 set -euo pipefail
 
 cd "$(dirname "$0")/backend"
+PORT=8000
+URL="http://localhost:$PORT"
 
 # 1. Encontra o Python
 PY=""
@@ -40,8 +42,17 @@ fi
 
 echo ""
 echo "================================================================"
-echo "  App no ar:  http://localhost:8000      (API / Swagger em /docs)"
+echo "  App no ar:  $URL      (API / Swagger em /docs)"
 echo "  Para parar: Ctrl+C"
 echo "================================================================"
 echo ""
-exec "$VENV_PY" -m uvicorn app.main:app --port 8000
+
+# Abre o navegador assim que o servidor subir (~2s)
+(
+  sleep 2
+  if command -v open >/dev/null 2>&1; then open "$URL"
+  elif command -v xdg-open >/dev/null 2>&1; then xdg-open "$URL"
+  fi
+) >/dev/null 2>&1 &
+
+exec "$VENV_PY" -m uvicorn app.main:app --port "$PORT"
