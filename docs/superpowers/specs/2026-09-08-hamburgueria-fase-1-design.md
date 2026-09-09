@@ -4,7 +4,7 @@
 
 - **Data:** 2026-09-08
 - **Repositório:** `AndressaBitencourt/Software-Product` (público)
-- **Entrega:** trabalho de faculdade em 5 fases incrementais
+- **Entrega:** trabalho de faculdade em 3 fases incrementais (era 5; ver seção 1)
 
 ---
 
@@ -14,17 +14,19 @@ Software web para uma hamburgueria gerenciar pedidos. Não é uma página
 estática: tem front-end, back-end e banco de dados, com dados dinâmicos
 manipulados via API.
 
-O projeto é entregue em **5 fases**. Cada fase adiciona uma funcionalidade
+O projeto é entregue em **3 fases**. Cada fase adiciona funcionalidades
 por cima da base da fase anterior, sem quebrar o que já funciona. Cada fase
 tem seu próprio ciclo de design → plano → implementação → verificação.
+
+> Histórico: o projeto foi planejado em 5 fases; a faculdade depois pediu 3.
+> As 4 funcionalidades que restavam foram condensadas nas Fases 2 e 3
+> (decisão de 2026-09-08).
 
 | Fase | Funcionalidade | Escopo resumido |
 |---|---|---|
 | **1** | CRUD completo de Pedidos | Cardápio fixo (seed). Criar, listar, ver, editar e excluir pedidos. Tela web única. |
-| 2 | Gestão de Cardápio | CRUD de hambúrgueres (nome, preço, categoria, disponibilidade). Formulário de pedido passa a puxar do cardápio real. |
-| 3 | Fluxo do pedido + conta | Ciclo de status (Recebido → Em preparo → Pronto → Entregue / Cancelado), cálculo de total e conta detalhada, tela de cozinha por status. |
-| 4 | Login e perfis | Autenticação com papéis cliente e atendente/admin. Rotas protegidas. |
-| 5 | Relatórios / dashboard | Faturamento por dia, itens mais vendidos, total de pedidos, busca e filtros, gráficos simples. |
+| 2 | Gestão de Cardápio **+** Fluxo do pedido | CRUD de hambúrgueres (nome, preço, categoria, disponibilidade) — o formulário de pedido passa a puxar do cardápio real. **E** ciclo de status (Recebido → Em preparo → Pronto → Entregue / Cancelado), conta detalhada, tela de cozinha por status. |
+| 3 | Login e perfis **+** Relatórios / dashboard | Autenticação com papéis cliente e atendente/admin, rotas protegidas. **E** faturamento por dia, itens mais vendidos, total de pedidos, busca, filtros e gráficos simples. |
 
 Este documento cobre **apenas a Fase 1**.
 
@@ -108,7 +110,7 @@ HTTP em chamadas de `crud`. Dá para entender e testar cada um isoladamente.
 | `id` | int | PK, autoincremento |
 | `cliente_nome` | str(80) | obrigatório |
 | `observacao` | str(255) | opcional |
-| `status` | str(20) | default `"recebido"` — fixo na Fase 1; ciclo completo entra na Fase 3 |
+| `status` | str(20) | default `"recebido"` — fixo na Fase 1; ciclo completo entra na Fase 2 |
 | `criado_em` | datetime | preenchido na criação (UTC) |
 | `atualizado_em` | datetime | atualizado a cada alteração (UTC) |
 | `total` | — | **não é coluna**; calculado como soma dos `subtotal` dos itens |
@@ -308,9 +310,9 @@ não depender de separador de path do SO.
 ## 10. Fora de escopo na Fase 1 (entra depois)
 
 - CRUD de produtos pela API/UI (Fase 2).
-- Mudança de status do pedido e tela de cozinha (Fase 3).
-- Autenticação, sessões e papéis (Fase 4).
-- Relatórios e gráficos (Fase 5).
+- Mudança de status do pedido e tela de cozinha (Fase 2).
+- Autenticação, sessões e papéis (Fase 3).
+- Relatórios e gráficos (Fase 3).
 - Paginação da lista de pedidos, migrações de schema (Alembic), CI.
 
 ---

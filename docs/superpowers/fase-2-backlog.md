@@ -27,7 +27,7 @@ Nenhum destes bloqueia a Fase 1. São melhorias a encaixar quando a Fase 2
 - Afirmar o corpo `detail` (não só o `status_code`) nos caminhos de erro
   de PUT/DELETE e de alguns de produtos.
 - `test_listar_pedidos`: afirmar `quantidade_itens == 3` num pedido com 2
-  linhas e 3 unidades (fixa o contrato pra Fase 5).
+  linhas e 3 unidades (fixa o contrato pros relatórios da Fase 3).
 - `test_get_produtos_retorna_seed`: afirmar a ordenação `categoria, nome`.
 - Comparação de timestamps em `test_editar_pedido_recalcula_total` é
   lexicográfica de string — trocar por `datetime.fromisoformat`.

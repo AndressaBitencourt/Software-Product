@@ -1,6 +1,6 @@
 # Software-Product — Sistema de Pedidos da Hamburgueria
 
-Trabalho de faculdade entregue em 5 fases. **Fase 1:** CRUD completo de pedidos
+Trabalho de faculdade entregue em 3 fases. **Fase 1:** CRUD completo de pedidos
 com front-end, back-end e banco de dados.
 
 ## Tecnologias
@@ -75,7 +75,5 @@ pytest -v
 | Fase | Funcionalidade |
 |---|---|
 | 1 | CRUD de pedidos (esta entrega) |
-| 2 | Gestão de cardápio (CRUD de produtos) |
-| 3 | Fluxo de status do pedido + conta detalhada |
-| 4 | Login e perfis (cliente / atendente) |
-| 5 | Relatórios e dashboard |
+| 2 | Gestão de cardápio (CRUD de produtos) + fluxo de status do pedido (Recebido → Preparo → Pronto → Entregue/Cancelado) + conta detalhada + tela de cozinha |
+| 3 | Login e perfis (cliente / atendente / admin) + relatórios e dashboard |
