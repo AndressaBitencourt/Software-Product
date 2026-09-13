@@ -15,13 +15,13 @@ CRUD completo de pedidos, com front-end, back-end e banco de dados.
 
 ### Opção mais fácil — script pronto
 
-Fiz um script que acha o Python, cria o ambiente virtual, instala as
-dependências e sobe o app. Não precisa de Docker.
+Fiz um script que acha o Python (instala sozinho se faltar), cria o ambiente
+virtual, instala as dependências e sobe o app. Não precisa de Docker.
 
-- macOS / Linux: `./run.sh`
-- Windows: dê dois cliques em `run.bat` (ou rode `run.bat` no terminal)
+- macOS / Linux: `./EXECUTE-AQUI.sh`
+- Windows: dê dois cliques em `EXECUTE-AQUI.bat` (ou rode no terminal)
 
-Para rodar os testes em vez do servidor: `./run.sh test` (ou `run.bat test`).
+Para rodar os testes em vez do servidor: `./EXECUTE-AQUI.sh test` (ou `EXECUTE-AQUI.bat test`).
 
 ### Opção A — Docker (funciona igual em macOS e Windows)
 

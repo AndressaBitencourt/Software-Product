@@ -1,7 +1,7 @@
 @echo off
 REM ============================================================================
 REM  Software-Product - Fase 1 (sistema de pedidos da hamburgueria)
-REM  Sobe o app.  Para rodar os 28 testes em vez do servidor:  run.bat test
+REM  Sobe o app.  Para rodar os 28 testes em vez do servidor:  EXECUTE-AQUI.bat test
 REM  O script verifica o Python, instala o que faltar e explica cada passo.
 REM ============================================================================
 setlocal enabledelayedexpansion
@@ -21,7 +21,7 @@ echo ==================================================================
 echo.
 
 if not exist "%ROOT%\backend\requirements.txt" (
-  set "ERR=Nao encontrei a pasta 'backend' aqui. Extraia o ZIP inteiro e mantenha o run.bat na mesma pasta que 'backend' e 'frontend'."
+  set "ERR=Nao encontrei a pasta 'backend' aqui. Extraia o ZIP inteiro e mantenha o EXECUTE-AQUI.bat na mesma pasta que 'backend' e 'frontend'."
   goto :fail
 )
 cd /d "%ROOT%\backend"
@@ -40,7 +40,7 @@ if not defined PY (
 )
 if not defined PY (
   if defined TRIED_INSTALL (
-    set "ERR=O Python foi (ou tentou ser) instalado, mas esta janela ainda nao enxerga. FECHE esta janela, abra de novo e rode o run.bat mais uma vez. Se continuar, instale manualmente de https://www.python.org/downloads/ marcando 'Add python.exe to PATH'."
+    set "ERR=O Python foi (ou tentou ser) instalado, mas esta janela ainda nao enxerga. FECHE esta janela, abra de novo e rode o EXECUTE-AQUI.bat mais uma vez. Se continuar, instale manualmente de https://www.python.org/downloads/ marcando 'Add python.exe to PATH'."
   ) else (
     set "ERR=Python nao esta instalado. Baixe de https://www.python.org/downloads/ e MARQUE 'Add python.exe to PATH' na instalacao."
   )
@@ -133,7 +133,7 @@ if errorlevel 1 (
   echo       O 'winget' nao esta disponivel neste Windows - nao da pra instalar sozinho.
   echo       Abrindo a pagina oficial de download no navegador...
   start "" "https://www.python.org/downloads/"
-  echo       Instale, MARQUE "Add python.exe to PATH", feche esta janela e rode o run.bat de novo.
+  echo       Instale, MARQUE "Add python.exe to PATH", feche esta janela e rode o EXECUTE-AQUI.bat de novo.
   goto :eof
 )
 echo       Instalando o Python 3.12 via winget (pode aparecer uma confirmacao)...

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # ============================================================================
 #  Software-Product - Fase 1 (sistema de pedidos da hamburgueria)
-#  Sobe o app e abre o navegador.  Para rodar os 28 testes:  ./run.sh test
+#  Sobe o app e abre o navegador.  Para rodar os 28 testes:  ./EXECUTE-AQUI.sh test
 #  O script verifica o Python, instala o que faltar e explica cada passo.
 # ============================================================================
 set -uo pipefail
@@ -29,7 +29,7 @@ fail() {
   exit 1
 }
 
-[ -f "$ROOT/backend/requirements.txt" ] || fail "Nao encontrei a pasta 'backend'. Extraia tudo e deixe o run.sh na mesma pasta que 'backend' e 'frontend'."
+[ -f "$ROOT/backend/requirements.txt" ] || fail "Nao encontrei a pasta 'backend'. Extraia tudo e deixe o EXECUTE-AQUI.sh na mesma pasta que 'backend' e 'frontend'."
 cd "$ROOT/backend"
 
 # ------------------------------------------------------------------ [1/5] Python
@@ -51,19 +51,19 @@ if [ -z "$PY" ]; then
       echo "      O Homebrew nao esta instalado (seria o instalador automatico no Mac)."
       echo "      Abrindo a pagina oficial do Python..."
       open "https://www.python.org/downloads/" 2>/dev/null || true
-      fail "Instale o Python 3.12 de python.org (ou instale o Homebrew e rode de novo), depois rode o run.sh outra vez."
+      fail "Instale o Python 3.12 de python.org (ou instale o Homebrew e rode de novo), depois rode o EXECUTE-AQUI.sh outra vez."
     fi
   elif command -v apt-get >/dev/null 2>&1; then
     sudo apt-get update && sudo apt-get install -y python3 python3-venv python3-pip || true
   else
-    fail "Nao sei instalar o Python automaticamente neste sistema. Instale o Python 3.10+ e rode o run.sh de novo."
+    fail "Nao sei instalar o Python automaticamente neste sistema. Instale o Python 3.10+ e rode o EXECUTE-AQUI.sh de novo."
   fi
   for c in python3.12 python3.11 python3.10 python3 python; do
     if command -v "$c" >/dev/null 2>&1 && "$c" -c 'import sys; raise SystemExit(0 if sys.version_info>=(3,10) else 1)' 2>/dev/null; then
       PY="$c"; break
     fi
   done
-  [ -n "$PY" ] || fail "O Python foi instalado mas nao apareceu no PATH desta sessao. Feche o terminal, abra de novo e rode o run.sh mais uma vez."
+  [ -n "$PY" ] || fail "O Python foi instalado mas nao apareceu no PATH desta sessao. Feche o terminal, abra de novo e rode o EXECUTE-AQUI.sh mais uma vez."
 fi
 echo "      OK - $("$PY" --version)   (comando: $PY)"
 echo
