@@ -1,7 +1,10 @@
+import base64
+
+import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
-from app import models
+from app import models, uploads
 from app.seed import CARDAPIO_INICIAL, seed_cardapio
 
 
@@ -34,7 +37,7 @@ def test_get_produtos_retorna_seed(client: TestClient) -> None:
     assert len(corpo) == 8
     primeiro = corpo[0]
     assert set(primeiro) == {
-        "id", "nome", "descricao", "preco", "categoria", "disponivel"
+        "id", "nome", "descricao", "preco", "categoria", "disponivel", "imagem_url"
     }
     assert isinstance(primeiro["preco"], str)
     assert primeiro["preco"].count(".") == 1
@@ -175,3 +178,68 @@ def test_editar_produto_mantendo_proprio_nome(client: TestClient) -> None:
     assert resp.status_code == 200
     assert resp.json()["disponivel"] is False
     assert len(client.get("/api/produtos").json()) == 7
+
+
+_PNG_1X1 = base64.b64decode(
+    "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII="
+)
+
+
+@pytest.fixture
+def uploads_tmp(tmp_path, monkeypatch):
+    monkeypatch.setattr(uploads, "PRODUTOS_DIR", tmp_path)
+    return tmp_path
+
+
+def test_upload_imagem_produto(client: TestClient, uploads_tmp) -> None:
+    resp = client.post(
+        "/api/produtos/1/imagem",
+        files={"arquivo": ("foto.png", _PNG_1X1, "image/png")},
+    )
+    assert resp.status_code == 200
+    corpo = resp.json()
+    assert corpo["imagem_url"].startswith("/uploads/produtos/1-")
+    assert len(list(uploads_tmp.iterdir())) == 1
+
+
+def test_upload_imagem_substitui_anterior(client: TestClient, uploads_tmp) -> None:
+    client.post("/api/produtos/1/imagem", files={"arquivo": ("a.png", _PNG_1X1, "image/png")})
+    client.post("/api/produtos/1/imagem", files={"arquivo": ("b.png", _PNG_1X1, "image/png")})
+    assert len(list(uploads_tmp.iterdir())) == 1
+
+
+def test_upload_imagem_formato_invalido_400(client: TestClient, uploads_tmp) -> None:
+    resp = client.post(
+        "/api/produtos/1/imagem",
+        files={"arquivo": ("doc.txt", b"nao e imagem", "text/plain")},
+    )
+    assert resp.status_code == 400
+
+
+def test_upload_imagem_produto_inexistente_404(client: TestClient, uploads_tmp) -> None:
+    resp = client.post(
+        "/api/produtos/999/imagem",
+        files={"arquivo": ("foto.png", _PNG_1X1, "image/png")},
+    )
+    assert resp.status_code == 404
+
+
+def test_upload_imagem_muito_grande_400(client: TestClient, uploads_tmp) -> None:
+    conteudo_grande = b"0" * (5 * 1024 * 1024 + 1)
+    resp = client.post(
+        "/api/produtos/1/imagem",
+        files={"arquivo": ("foto.png", conteudo_grande, "image/png")},
+    )
+    assert resp.status_code == 400
+
+
+def test_excluir_produto_remove_arquivo_de_imagem(client: TestClient, uploads_tmp) -> None:
+    criado = client.post("/api/produtos", json=PRODUTO_NOVO).json()
+    client.post(
+        f"/api/produtos/{criado['id']}/imagem",
+        files={"arquivo": ("foto.png", _PNG_1X1, "image/png")},
+    )
+    assert len(list(uploads_tmp.iterdir())) == 1
+
+    client.delete(f"/api/produtos/{criado['id']}")
+    assert len(list(uploads_tmp.iterdir())) == 0

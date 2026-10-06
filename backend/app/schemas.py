@@ -30,6 +30,7 @@ class ProdutoOut(BaseModel):
     preco: Money
     categoria: str
     disponivel: bool
+    imagem_url: str | None = None
 
 
 class ProdutoIn(BaseModel):

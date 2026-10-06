@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
 from sqlalchemy.orm import Session
 
 from app import crud, models, schemas
@@ -54,3 +54,18 @@ def excluir(produto_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=400, detail=erro.mensagem) from erro
     if not encontrou:
         raise HTTPException(status_code=404, detail="Produto não encontrado.")
+
+
+@router.post("/{produto_id}/imagem", response_model=schemas.ProdutoOut)
+async def enviar_imagem(
+    produto_id: int,
+    arquivo: UploadFile = File(...),
+    db: Session = Depends(get_db),
+):
+    try:
+        produto = await crud.salvar_imagem_produto(db, produto_id, arquivo)
+    except crud.RegraNegocioError as erro:
+        raise HTTPException(status_code=400, detail=erro.mensagem) from erro
+    if produto is None:
+        raise HTTPException(status_code=404, detail="Produto não encontrado.")
+    return produto
