@@ -103,8 +103,16 @@ async function submeter(evento) {
   }
 }
 
+function atualizarListaCategorias(produtos) {
+  const categorias = [...new Set(produtos.map((p) => p.categoria))].sort();
+  $("#categorias-lista").innerHTML = categorias
+    .map((c) => `<option value="${c}"></option>`)
+    .join("");
+}
+
 async function carregarProdutos() {
   const produtos = await api("/produtos?incluir_indisponiveis=true");
+  atualizarListaCategorias(produtos);
   const tbody = $("#lista-produtos");
   tbody.innerHTML = "";
   $("#produtos-vazio").hidden = produtos.length > 0;
