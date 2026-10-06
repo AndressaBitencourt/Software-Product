@@ -1,4 +1,4 @@
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app import models, schemas
@@ -139,5 +139,24 @@ def excluir_pedido(db: Session, pedido_id: int) -> bool:
     if pedido is None:
         return False
     db.delete(pedido)
+    db.commit()
+    return True
+
+
+def excluir_produto(db: Session, produto_id: int) -> bool:
+    produto = db.get(models.Produto, produto_id)
+    if produto is None:
+        return False
+    em_uso = db.scalar(
+        select(func.count())
+        .select_from(models.ItemPedido)
+        .where(models.ItemPedido.produto_id == produto_id)
+    )
+    if em_uso:
+        raise RegraNegocioError(
+            "Não é possível excluir — esse produto já aparece em pedidos. "
+            "Marque como indisponível em vez de excluir."
+        )
+    db.delete(produto)
     db.commit()
     return True
