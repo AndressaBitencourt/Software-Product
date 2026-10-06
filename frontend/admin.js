@@ -108,9 +108,10 @@ async function submeter(evento) {
     categoria: $("#categoria").value.trim(),
     disponivel: $("#disponivel").checked,
   };
+  const estavaEditando = Boolean(editandoId);
+  const arquivoParaEnviar = arquivoSelecionado;
+  let produto;
   try {
-    let produto;
-    const estavaEditando = Boolean(editandoId);
     if (editandoId) {
       produto = await api(`/produtos/${editandoId}`, {
         method: "PUT",
@@ -122,14 +123,28 @@ async function submeter(evento) {
         body: JSON.stringify(payload),
       });
     }
-    if (arquivoSelecionado) {
-      await enviarImagem(produto.id, arquivoSelecionado);
-    }
-    aviso(estavaEditando ? "Produto atualizado." : "Produto criado.", "ok");
-    sairModoEdicao();
-    await carregarProdutos();
   } catch (e) {
     aviso(e.message, "erro");
+    return;
+  }
+
+  sairModoEdicao();
+  await carregarProdutos();
+
+  if (!arquivoParaEnviar) {
+    aviso(estavaEditando ? "Produto atualizado." : "Produto criado.", "ok");
+    return;
+  }
+
+  try {
+    await enviarImagem(produto.id, arquivoParaEnviar);
+    aviso(estavaEditando ? "Produto atualizado." : "Produto criado.", "ok");
+    await carregarProdutos();
+  } catch (e) {
+    aviso(
+      `Produto ${estavaEditando ? "atualizado" : "criado"}, mas a foto não foi enviada: ${e.message}`,
+      "erro"
+    );
   }
 }
 
