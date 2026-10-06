@@ -26,6 +26,25 @@ def obter_produto(db: Session, produto_id: int) -> models.Produto | None:
     return db.get(models.Produto, produto_id)
 
 
+def criar_produto(db: Session, dados: schemas.ProdutoIn) -> models.Produto:
+    existente = db.scalar(
+        select(models.Produto).where(models.Produto.nome == dados.nome)
+    )
+    if existente is not None:
+        raise RegraNegocioError(f"Já existe um produto chamado '{dados.nome}'.")
+    produto = models.Produto(
+        nome=dados.nome,
+        descricao=dados.descricao,
+        preco=dados.preco,
+        categoria=dados.categoria,
+        disponivel=dados.disponivel,
+    )
+    db.add(produto)
+    db.commit()
+    db.refresh(produto)
+    return produto
+
+
 def _montar_itens(
     db: Session, itens_in: list[schemas.ItemPedidoIn]
 ) -> list[models.ItemPedido]:
