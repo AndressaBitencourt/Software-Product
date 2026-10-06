@@ -61,6 +61,7 @@ async function carregarCardapio() {
     const div = document.createElement("div");
     div.className = "card";
     div.innerHTML = `
+      <img class="card-img" src="${p.imagem_url || "/images/seed/placeholder.svg"}" alt="${p.nome}" />
       <strong>${p.nome}</strong>
       <small>${p.categoria}</small>
       <span>${p.descricao ?? ""}</span>

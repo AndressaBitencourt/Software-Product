@@ -2,6 +2,7 @@
 
 const API = "/api";
 let editandoId = null;
+let arquivoSelecionado = null;
 
 const $ = (sel) => document.querySelector(sel);
 
@@ -53,6 +54,8 @@ async function api(caminho, opcoes) {
 
 function entrarModoEdicao(produto) {
   editandoId = produto.id;
+  arquivoSelecionado = null;
+  $("#imagem").value = "";
   $("#form-titulo").textContent = `Editar produto #${produto.id}`;
   $("#btn-salvar").textContent = "Salvar alterações";
   $("#btn-cancelar").hidden = false;
@@ -61,16 +64,39 @@ function entrarModoEdicao(produto) {
   $("#preco").value = produto.preco;
   $("#categoria").value = produto.categoria;
   $("#disponivel").checked = produto.disponivel;
+  const preview = $("#preview-imagem");
+  if (produto.imagem_url) {
+    preview.src = produto.imagem_url;
+    preview.hidden = false;
+  } else {
+    preview.hidden = true;
+  }
   $("#secao-form").scrollIntoView({ behavior: "smooth" });
 }
 
 function sairModoEdicao() {
   editandoId = null;
+  arquivoSelecionado = null;
   $("#form-titulo").textContent = "Novo produto";
   $("#btn-salvar").textContent = "Salvar produto";
   $("#btn-cancelar").hidden = true;
   $("#form-produto").reset();
   $("#disponivel").checked = true;
+  $("#preview-imagem").hidden = true;
+}
+
+async function enviarImagem(produtoId, arquivo) {
+  const dados = new FormData();
+  dados.append("arquivo", arquivo);
+  const resp = await fetch(`${API}/produtos/${produtoId}/imagem`, {
+    method: "POST",
+    body: dados,
+  });
+  const corpo = await resp.json().catch(() => ({}));
+  if (!resp.ok) {
+    throw new Error(corpo.detail || "Falha ao enviar a imagem.");
+  }
+  return corpo;
 }
 
 async function submeter(evento) {
@@ -83,19 +109,23 @@ async function submeter(evento) {
     disponivel: $("#disponivel").checked,
   };
   try {
+    let produto;
+    const estavaEditando = Boolean(editandoId);
     if (editandoId) {
-      await api(`/produtos/${editandoId}`, {
+      produto = await api(`/produtos/${editandoId}`, {
         method: "PUT",
         body: JSON.stringify(payload),
       });
-      aviso("Produto atualizado.", "ok");
     } else {
-      await api("/produtos", {
+      produto = await api("/produtos", {
         method: "POST",
         body: JSON.stringify(payload),
       });
-      aviso("Produto criado.", "ok");
     }
+    if (arquivoSelecionado) {
+      await enviarImagem(produto.id, arquivoSelecionado);
+    }
+    aviso(estavaEditando ? "Produto atualizado." : "Produto criado.", "ok");
     sairModoEdicao();
     await carregarProdutos();
   } catch (e) {
@@ -118,7 +148,9 @@ async function carregarProdutos() {
   $("#produtos-vazio").hidden = produtos.length > 0;
   for (const p of produtos) {
     const tr = document.createElement("tr");
+    const foto = p.imagem_url || "/images/seed/placeholder.svg";
     tr.innerHTML = `
+      <td><img class="thumb" src="${foto}" alt="${p.nome}" /></td>
       <td>${p.nome}</td>
       <td>${p.categoria}</td>
       <td>${brl(p.preco)}</td>
@@ -151,6 +183,15 @@ async function carregarProdutos() {
 
 $("#form-produto").addEventListener("submit", submeter);
 $("#btn-cancelar").addEventListener("click", sairModoEdicao);
+$("#imagem").addEventListener("change", (e) => {
+  const arquivo = e.target.files[0] ?? null;
+  arquivoSelecionado = arquivo;
+  const preview = $("#preview-imagem");
+  if (arquivo) {
+    preview.src = URL.createObjectURL(arquivo);
+    preview.hidden = false;
+  }
+});
 initMenu();
 
 (async function iniciar() {
