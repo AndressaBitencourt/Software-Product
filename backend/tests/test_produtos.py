@@ -243,3 +243,10 @@ def test_excluir_produto_remove_arquivo_de_imagem(client: TestClient, uploads_tm
 
     client.delete(f"/api/produtos/{criado['id']}")
     assert len(list(uploads_tmp.iterdir())) == 0
+
+
+def test_seed_grava_imagem_de_cada_item(db_session: Session) -> None:
+    seed_cardapio(db_session)
+    produtos = db_session.query(models.Produto).all()
+    assert all(p.imagem_url is not None for p in produtos)
+    assert all(p.imagem_url.startswith("/images/seed/") for p in produtos)
