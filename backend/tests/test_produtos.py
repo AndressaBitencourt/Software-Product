@@ -187,8 +187,11 @@ _PNG_1X1 = base64.b64decode(
 
 @pytest.fixture
 def uploads_tmp(tmp_path, monkeypatch):
-    monkeypatch.setattr(uploads, "PRODUTOS_DIR", tmp_path)
-    return tmp_path
+    produtos_dir = tmp_path / "produtos"
+    produtos_dir.mkdir()
+    monkeypatch.setattr(uploads, "UPLOADS_ROOT", tmp_path)
+    monkeypatch.setattr(uploads, "PRODUTOS_DIR", produtos_dir)
+    return produtos_dir
 
 
 def test_upload_imagem_produto(client: TestClient, uploads_tmp) -> None:
@@ -250,3 +253,15 @@ def test_seed_grava_imagem_de_cada_item(db_session: Session) -> None:
     produtos = db_session.query(models.Produto).all()
     assert all(p.imagem_url is not None for p in produtos)
     assert all(p.imagem_url.startswith("/images/seed/") for p in produtos)
+
+
+def test_mount_uploads_serve_arquivo_real(uploads_tmp, client: TestClient) -> None:
+    resp = client.post(
+        "/api/produtos/1/imagem",
+        files={"arquivo": ("foto.png", _PNG_1X1, "image/png")},
+    )
+    assert resp.status_code == 200
+    imagem_url = resp.json()["imagem_url"]
+    baixado = client.get(imagem_url)
+    assert baixado.status_code == 200
+    assert baixado.content == _PNG_1X1

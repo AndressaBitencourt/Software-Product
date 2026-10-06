@@ -20,6 +20,12 @@ function brl(valorStr) {
   return n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 }
 
+function esc(valor) {
+  return String(valor ?? "").replace(/[&<>"']/g, (c) =>
+    ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])
+  );
+}
+
 function initMenu() {
   const btn = $("#btn-menu");
   const menu = $("#menu-nav");
@@ -61,10 +67,10 @@ async function carregarCardapio() {
     const div = document.createElement("div");
     div.className = "card";
     div.innerHTML = `
-      <img class="card-img" src="${p.imagem_url || "/images/seed/placeholder.svg"}" alt="${p.nome}" />
-      <strong>${p.nome}</strong>
-      <small>${p.categoria}</small>
-      <span>${p.descricao ?? ""}</span>
+      <img class="card-img" src="${esc(p.imagem_url || "/images/seed/placeholder.svg")}" alt="${esc(p.nome)}" />
+      <strong>${esc(p.nome)}</strong>
+      <small>${esc(p.categoria)}</small>
+      <span>${esc(p.descricao ?? "")}</span>
       <span class="preco">${brl(p.preco)}</span>
       <button type="button" data-id="${p.id}">Adicionar</button>`;
     div.querySelector("button").addEventListener("click", () => adicionar(p.id));
@@ -179,7 +185,7 @@ async function carregarPedidos() {
     const tr = document.createElement("tr");
     tr.innerHTML = `
       <td>${p.id}</td>
-      <td>${p.cliente_nome}</td>
+      <td>${esc(p.cliente_nome)}</td>
       <td>${p.quantidade_itens}</td>
       <td>${brl(p.total)}</td>
       <td>${p.status}</td>
@@ -234,11 +240,11 @@ async function verDetalhe(pedidoId, linha) {
     const linhas = p.itens
       .map(
         (i) =>
-          `${i.quantidade}x ${i.produto_nome} — ${brl(i.preco_unitario)} (subtotal ${brl(i.subtotal)})`
+          `${i.quantidade}x ${esc(i.produto_nome)} — ${brl(i.preco_unitario)} (subtotal ${brl(i.subtotal)})`
       )
       .join("<br />");
     tr.innerHTML = `<td colspan="7">${linhas}<br /><strong>Total: ${brl(p.total)}</strong>${
-      p.observacao ? "<br />Obs.: " + p.observacao : ""
+      p.observacao ? "<br />Obs.: " + esc(p.observacao) : ""
     }</td>`;
     linha.after(tr);
   } catch (e) {

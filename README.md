@@ -16,9 +16,10 @@ numa página própria.
 ## Como rodar
 
 > **Atualizando de uma fase anterior?** Apague `backend/app.db` (ou rode
-> `docker compose down -v`) antes de subir — a Fase 2a adicionou uma coluna
-> nova (`item_pedido.produto_nome`) e o projeto não tem migração de schema
-> (sem Alembic), então um banco antigo quebra com `no such column`.
+> `docker compose down -v`) antes de subir — a Fase 2a adicionou colunas
+> novas (`item_pedido.produto_nome`, `produto.imagem_url`) e o projeto não
+> tem migração de schema (sem Alembic), então um banco antigo quebra com
+> `no such column`.
 
 ### Opção mais fácil — script pronto
 

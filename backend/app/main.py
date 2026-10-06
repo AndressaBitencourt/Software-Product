@@ -5,9 +5,8 @@ from pathlib import Path
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 
-from app import models  # noqa: F401  -- registra as tabelas em Base.metadata
+from app import models, uploads  # noqa: F401  -- registra as tabelas em Base.metadata
 from app.database import Base, SessionLocal, engine
-from app.uploads import UPLOADS_ROOT
 
 _DEFAULT_FRONTEND = Path(__file__).resolve().parent.parent.parent / "frontend"
 FRONTEND_DIR = Path(os.environ.get("FRONTEND_DIR", str(_DEFAULT_FRONTEND)))
@@ -50,8 +49,7 @@ def create_app(inicializar: bool = True) -> FastAPI:
 
     app.include_router(pedidos.router)
 
-    if UPLOADS_ROOT.is_dir():
-        app.mount("/uploads", StaticFiles(directory=UPLOADS_ROOT), name="uploads")
+    app.mount("/uploads", StaticFiles(directory=uploads.UPLOADS_ROOT), name="uploads")
 
     if FRONTEND_DIR.is_dir():
         app.mount(

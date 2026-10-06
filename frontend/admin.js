@@ -3,6 +3,7 @@
 const API = "/api";
 let editandoId = null;
 let arquivoSelecionado = null;
+let urlPreviewAtual = null;
 
 const $ = (sel) => document.querySelector(sel);
 
@@ -17,6 +18,12 @@ function aviso(msg, tipo) {
 function brl(valorStr) {
   const n = Number(valorStr || 0);
   return n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+}
+
+function esc(valor) {
+  return String(valor ?? "").replace(/[&<>"']/g, (c) =>
+    ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])
+  );
 }
 
 function initMenu() {
@@ -94,7 +101,11 @@ async function enviarImagem(produtoId, arquivo) {
   });
   const corpo = await resp.json().catch(() => ({}));
   if (!resp.ok) {
-    throw new Error(corpo.detail || "Falha ao enviar a imagem.");
+    const detalhe = corpo.detail;
+    const msg = Array.isArray(detalhe)
+      ? detalhe.map((d) => d.msg).join("; ")
+      : detalhe || "Falha ao enviar a imagem.";
+    throw new Error(msg);
   }
   return corpo;
 }
@@ -149,9 +160,11 @@ async function submeter(evento) {
 }
 
 function atualizarListaCategorias(produtos) {
-  const categorias = [...new Set(produtos.map((p) => p.categoria))].sort();
+  const categorias = [...new Set(produtos.map((p) => p.categoria))].sort((a, b) =>
+    a.localeCompare(b, "pt-BR")
+  );
   $("#categorias-lista").innerHTML = categorias
-    .map((c) => `<option value="${c}"></option>`)
+    .map((c) => `<option value="${esc(c)}"></option>`)
     .join("");
 }
 
@@ -165,9 +178,9 @@ async function carregarProdutos() {
     const tr = document.createElement("tr");
     const foto = p.imagem_url || "/images/seed/placeholder.svg";
     tr.innerHTML = `
-      <td><img class="thumb" src="${foto}" alt="${p.nome}" /></td>
-      <td>${p.nome}</td>
-      <td>${p.categoria}</td>
+      <td><img class="thumb" src="${esc(foto)}" alt="${esc(p.nome)}" /></td>
+      <td>${esc(p.nome)}</td>
+      <td>${esc(p.categoria)}</td>
       <td>${brl(p.preco)}</td>
       <td>${p.disponivel ? "Sim" : "Não"}</td>
       <td></td>`;
@@ -202,9 +215,17 @@ $("#imagem").addEventListener("change", (e) => {
   const arquivo = e.target.files[0] ?? null;
   arquivoSelecionado = arquivo;
   const preview = $("#preview-imagem");
+  if (urlPreviewAtual) {
+    URL.revokeObjectURL(urlPreviewAtual);
+    urlPreviewAtual = null;
+  }
   if (arquivo) {
-    preview.src = URL.createObjectURL(arquivo);
+    urlPreviewAtual = URL.createObjectURL(arquivo);
+    preview.src = urlPreviewAtual;
     preview.hidden = false;
+  } else {
+    preview.hidden = true;
+    preview.removeAttribute("src");
   }
 });
 initMenu();
