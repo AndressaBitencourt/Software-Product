@@ -31,3 +31,16 @@ def criar(dados: schemas.ProdutoIn, db: Session = Depends(get_db)):
     except crud.RegraNegocioError as erro:
         raise HTTPException(status_code=400, detail=erro.mensagem)
     return produto
+
+
+@router.put("/{produto_id}", response_model=schemas.ProdutoOut)
+def atualizar(
+    produto_id: int, dados: schemas.ProdutoIn, db: Session = Depends(get_db)
+):
+    try:
+        produto = crud.atualizar_produto(db, produto_id, dados)
+    except crud.RegraNegocioError as erro:
+        raise HTTPException(status_code=400, detail=erro.mensagem)
+    if produto is None:
+        raise HTTPException(status_code=404, detail="Produto não encontrado.")
+    return produto

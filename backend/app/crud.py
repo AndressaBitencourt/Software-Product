@@ -45,6 +45,29 @@ def criar_produto(db: Session, dados: schemas.ProdutoIn) -> models.Produto:
     return produto
 
 
+def atualizar_produto(
+    db: Session, produto_id: int, dados: schemas.ProdutoIn
+) -> models.Produto | None:
+    produto = db.get(models.Produto, produto_id)
+    if produto is None:
+        return None
+    conflito = db.scalar(
+        select(models.Produto).where(
+            models.Produto.nome == dados.nome, models.Produto.id != produto_id
+        )
+    )
+    if conflito is not None:
+        raise RegraNegocioError(f"Já existe um produto chamado '{dados.nome}'.")
+    produto.nome = dados.nome
+    produto.descricao = dados.descricao
+    produto.preco = dados.preco
+    produto.categoria = dados.categoria
+    produto.disponivel = dados.disponivel
+    db.commit()
+    db.refresh(produto)
+    return produto
+
+
 def _montar_itens(
     db: Session, itens_in: list[schemas.ItemPedidoIn]
 ) -> list[models.ItemPedido]:
