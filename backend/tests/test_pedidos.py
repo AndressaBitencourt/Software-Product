@@ -204,3 +204,14 @@ def test_editar_pedido_remove_itens_antigos(client: TestClient, db_session) -> N
     )
     assert resp.status_code == 200
     assert db_session.query(models.ItemPedido).count() == 1
+
+
+def test_produto_nome_e_snapshot(client: TestClient, db_session) -> None:
+    from app import models
+
+    criado = client.post("/api/pedidos", json=PEDIDO_VALIDO).json()
+    db_session.get(models.Produto, 1).nome = "X-Salada Supreme"
+    db_session.commit()
+
+    depois = client.get(f"/api/pedidos/{criado['id']}").json()
+    assert depois["itens"][0]["produto_nome"] == "X-Salada"
