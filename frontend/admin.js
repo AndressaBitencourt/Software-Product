@@ -18,6 +18,22 @@ function brl(valorStr) {
   return n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 }
 
+function initMenu() {
+  const btn = $("#btn-menu");
+  const menu = $("#menu-nav");
+  btn.addEventListener("click", () => {
+    const vaiAbrir = menu.hidden;
+    menu.hidden = !vaiAbrir;
+    btn.setAttribute("aria-expanded", String(vaiAbrir));
+  });
+  document.addEventListener("click", (e) => {
+    if (!menu.hidden && !menu.contains(e.target) && e.target !== btn) {
+      menu.hidden = true;
+      btn.setAttribute("aria-expanded", "false");
+    }
+  });
+}
+
 async function api(caminho, opcoes) {
   const resp = await fetch(API + caminho, {
     headers: { "Content-Type": "application/json" },
@@ -127,6 +143,7 @@ async function carregarProdutos() {
 
 $("#form-produto").addEventListener("submit", submeter);
 $("#btn-cancelar").addEventListener("click", sairModoEdicao);
+initMenu();
 
 (async function iniciar() {
   try {
