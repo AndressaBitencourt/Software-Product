@@ -12,7 +12,7 @@ def pedido_para_out(pedido: models.Pedido) -> schemas.PedidoOut:
         schemas.ItemPedidoOut(
             id=item.id,
             produto_id=item.produto_id,
-            produto_nome=item.produto.nome,
+            produto_nome=item.produto_nome,
             quantidade=item.quantidade,
             preco_unitario=Decimal(item.preco_unitario),
             subtotal=_subtotal(item),

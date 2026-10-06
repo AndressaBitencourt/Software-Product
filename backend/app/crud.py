@@ -45,6 +45,7 @@ def _montar_itens(
         itens.append(
             models.ItemPedido(
                 produto_id=produto.id,
+                produto_nome=produto.nome,
                 quantidade=entrada.quantidade,
                 preco_unitario=produto.preco,
             )

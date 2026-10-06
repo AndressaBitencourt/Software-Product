@@ -53,6 +53,7 @@ class ItemPedido(Base):
         ForeignKey("pedido.id", ondelete="CASCADE")
     )
     produto_id: Mapped[int] = mapped_column(ForeignKey("produto.id"))
+    produto_nome: Mapped[str] = mapped_column(String(80))
     quantidade: Mapped[int] = mapped_column()
     preco_unitario: Mapped[Decimal] = mapped_column(Numeric(10, 2))
 
