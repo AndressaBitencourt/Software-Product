@@ -32,6 +32,14 @@ class ProdutoOut(BaseModel):
     disponivel: bool
 
 
+class ProdutoIn(BaseModel):
+    nome: str = Field(min_length=1, max_length=80)
+    descricao: str | None = Field(default=None, max_length=255)
+    preco: Decimal = Field(gt=0)
+    categoria: str = Field(min_length=1, max_length=40)
+    disponivel: bool = True
+
+
 class ItemPedidoIn(BaseModel):
     produto_id: int
     quantidade: int = Field(ge=1)

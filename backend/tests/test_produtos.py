@@ -64,3 +64,38 @@ def test_get_produto_inexistente_404(client: TestClient) -> None:
     resp = client.get("/api/produtos/999")
     assert resp.status_code == 404
     assert resp.json()["detail"] == "Produto não encontrado."
+
+
+PRODUTO_NOVO = {
+    "nome": "X-Frango",
+    "descricao": "Frango grelhado, queijo, alface e maionese",
+    "preco": "21.50",
+    "categoria": "Clássicos",
+    "disponivel": True,
+}
+
+
+def test_criar_produto_valido(client: TestClient) -> None:
+    resp = client.post("/api/produtos", json=PRODUTO_NOVO)
+    assert resp.status_code == 201
+    corpo = resp.json()
+    assert corpo["nome"] == "X-Frango"
+    assert corpo["preco"] == "21.50"
+    assert corpo["disponivel"] is True
+
+    listados = client.get("/api/produtos").json()
+    assert len(listados) == 9
+
+
+def test_criar_produto_nome_duplicado_400(client: TestClient) -> None:
+    resp = client.post(
+        "/api/produtos",
+        json={**PRODUTO_NOVO, "nome": "X-Salada"},
+    )
+    assert resp.status_code == 400
+    assert "X-Salada" in resp.json()["detail"]
+
+
+def test_criar_produto_preco_invalido_422(client: TestClient) -> None:
+    resp = client.post("/api/produtos", json={**PRODUTO_NOVO, "preco": "0"})
+    assert resp.status_code == 422
