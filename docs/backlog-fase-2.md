@@ -58,10 +58,20 @@ a Fase 2 (CRUD de cardápio) mexer nas áreas relacionadas.
   pra quebrar atributo (`alt=`/`src=`) com aspas no nome do produto —
   por isso resolvi na hora em vez de adiar de novo.
 
+## Fotos do cardápio inicial
+
+- Trocadas as 8 ilustrações SVG do seed por fotos reais (Pexels License —
+  uso comercial livre, sem exigência de atribuição). Créditos mantidos em
+  `frontend/images/seed/CREDITS.md` por transparência, não por obrigação.
+  `placeholder.svg` continua sendo ilustração própria (fallback para
+  produto sem foto).
+
 ## Itens menores que adiei de novo (não bloqueiam nada)
 
-- Os 9 SVGs novos (`frontend/images/seed/`) não têm quebra de linha no
-  fim do arquivo — cosmético, sem config de lint no projeto que reclame.
+- `frontend/images/seed/placeholder.svg` não tem quebra de linha no fim
+  do arquivo — cosmético, sem config de lint no projeto que reclame. (Os
+  outros 8 SVGs do seed inicial foram substituídos por fotos reais — ver
+  "Fotos do cardápio inicial" abaixo.)
 - 3 dos 6 testes de upload com erro (formato inválido, produto
   inexistente, tamanho excedido) checam só o `status_code`, não que zero
   arquivos foram gravados — o comportamento está certo (confirmei), só
