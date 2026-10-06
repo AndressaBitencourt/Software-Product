@@ -10,7 +10,7 @@ mantidos por transparência acadêmica, não por obrigação de licença.
 | `x-salada.jpg` | [Close-up Photo of a Cheeseburger](https://www.pexels.com/photo/close-up-photo-of-a-cheeseburger-1556698/) | Daniel Reche |
 | `x-bacon.jpg` | [Ham and Bacon Burger](https://www.pexels.com/photo/ham-and-bacon-burger-2983098/) | Jonathan Borba |
 | `x-tudo.jpg` | [Cheeseburger on Table](https://www.pexels.com/photo/cheeseburger-on-table-2089717/) | Adrian Dorobantu |
-| `x-vegetariano.jpg` | [Burger With Lettuce and Tomato](https://www.pexels.com/photo/burger-with-lettuce-and-tomato-3607284/) | Grooveland Designs |
+| `x-vegetariano.jpg` | [Burger With Green Leafy Vegetable and Cheese on Black Plate](https://www.pexels.com/photo/burger-with-green-leafy-vegetable-and-cheese-on-black-plate-1199958/) | Valeria Boltneva |
 | `batata-frita.jpg` | [Close Up Photo of French Fries](https://www.pexels.com/photo/close-up-photo-of-french-fries-4109234/) | Polina Tankilevitch |
 | `onion-rings.jpg` | [Onion rings and ketchup with chili peppers on blue surface](https://www.pexels.com/photo/onion-rings-and-ketchup-with-chili-peppers-on-blue-surface-6941051/) | Alena Shekhovtcova |
 | `refrigerante.jpg` | [Glass of Soda With Ice Cubes](https://www.pexels.com/photo/glass-of-soda-with-ice-cubes-8880742/) | cottonbro studio |
@@ -18,3 +18,9 @@ mantidos por transparência acadêmica, não por obrigação de licença.
 
 `placeholder.svg` continua sendo uma ilustração própria (sem foto associada), usada
 como imagem padrão para produtos cadastrados sem upload.
+
+## Padronização
+
+Todas as fotos são recortadas para 800x600 (4:3, igual ao `.card-img` do CSS) e
+comprimidas em JPEG qualidade 78 — mantém o cardápio visualmente consistente e
+cada arquivo abaixo de ~65 KB.
