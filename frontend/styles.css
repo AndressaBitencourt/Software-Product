@@ -162,3 +162,27 @@ th { background: #F6F0E2; font-family: "Fraunces", serif; font-weight: 600; }
   thead { display: none; }
   td { border: 0; border-bottom: 1px solid var(--line); }
 }
+
+.card-img {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  border-radius: 8px;
+  background: #F6F0E2;
+}
+.thumb {
+  width: 44px;
+  height: 44px;
+  object-fit: cover;
+  border-radius: 6px;
+  background: #F6F0E2;
+  display: block;
+}
+.preview-img {
+  max-width: 160px;
+  max-height: 120px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  margin-top: 6px;
+}

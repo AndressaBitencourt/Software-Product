@@ -41,6 +41,10 @@
           <input type="checkbox" id="disponivel" checked />
           Disponível
         </label>
+        <label>Foto do produto
+          <input type="file" id="imagem" accept="image/jpeg,image/png,image/webp" />
+        </label>
+        <img id="preview-imagem" class="preview-img" hidden alt="Prévia da foto" />
 
         <div class="acoes">
           <button type="submit" id="btn-salvar">Salvar produto</button>
@@ -54,7 +58,7 @@
       <table>
         <thead>
           <tr>
-            <th>Nome</th><th>Categoria</th><th>Preço</th>
+            <th>Foto</th><th>Nome</th><th>Categoria</th><th>Preço</th>
             <th>Disponível</th><th></th>
           </tr>
         </thead>
