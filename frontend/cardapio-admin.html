@@ -34,7 +34,8 @@
           <input type="number" id="preco" min="0.01" step="0.01" required />
         </label>
         <label>Categoria
-          <input type="text" id="categoria" maxlength="40" required />
+          <input type="text" id="categoria" maxlength="40" required list="categorias-lista" />
+          <datalist id="categorias-lista"></datalist>
         </label>
         <label>
           <input type="checkbox" id="disponivel" checked />
