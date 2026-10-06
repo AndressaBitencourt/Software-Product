@@ -44,3 +44,13 @@ def atualizar(
     if produto is None:
         raise HTTPException(status_code=404, detail="Produto não encontrado.")
     return produto
+
+
+@router.delete("/{produto_id}", status_code=status.HTTP_204_NO_CONTENT)
+def excluir(produto_id: int, db: Session = Depends(get_db)):
+    try:
+        encontrou = crud.excluir_produto(db, produto_id)
+    except crud.RegraNegocioError as erro:
+        raise HTTPException(status_code=400, detail=erro.mensagem)
+    if not encontrou:
+        raise HTTPException(status_code=404, detail="Produto não encontrado.")
