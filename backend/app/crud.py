@@ -26,11 +26,17 @@ def obter_produto(db: Session, produto_id: int) -> models.Produto | None:
     return db.get(models.Produto, produto_id)
 
 
+def _nome_de_produto_em_uso(
+    db: Session, nome: str, ignorar_id: int | None = None
+) -> bool:
+    stmt = select(models.Produto).where(models.Produto.nome == nome)
+    if ignorar_id is not None:
+        stmt = stmt.where(models.Produto.id != ignorar_id)
+    return db.scalar(stmt) is not None
+
+
 def criar_produto(db: Session, dados: schemas.ProdutoIn) -> models.Produto:
-    existente = db.scalar(
-        select(models.Produto).where(models.Produto.nome == dados.nome)
-    )
-    if existente is not None:
+    if _nome_de_produto_em_uso(db, dados.nome):
         raise RegraNegocioError(f"Já existe um produto chamado '{dados.nome}'.")
     produto = models.Produto(
         nome=dados.nome,
@@ -51,12 +57,7 @@ def atualizar_produto(
     produto = db.get(models.Produto, produto_id)
     if produto is None:
         return None
-    conflito = db.scalar(
-        select(models.Produto).where(
-            models.Produto.nome == dados.nome, models.Produto.id != produto_id
-        )
-    )
-    if conflito is not None:
+    if _nome_de_produto_em_uso(db, dados.nome, ignorar_id=produto_id):
         raise RegraNegocioError(f"Já existe um produto chamado '{dados.nome}'.")
     produto.nome = dados.nome
     produto.descricao = dados.descricao
@@ -69,7 +70,9 @@ def atualizar_produto(
 
 
 def _montar_itens(
-    db: Session, itens_in: list[schemas.ItemPedidoIn]
+    db: Session,
+    itens_in: list[schemas.ItemPedidoIn],
+    produtos_ja_aceitos: frozenset[int] = frozenset(),
 ) -> list[models.ItemPedido]:
     if not itens_in:
         raise RegraNegocioError("O pedido precisa ter pelo menos um item.")
@@ -80,7 +83,7 @@ def _montar_itens(
             raise RegraNegocioError(
                 f"Produto {entrada.produto_id} não existe."
             )
-        if not produto.disponivel:
+        if not produto.disponivel and produto.id not in produtos_ja_aceitos:
             raise RegraNegocioError(
                 f"Produto '{produto.nome}' está indisponível."
             )
@@ -124,7 +127,8 @@ def atualizar_pedido(
     pedido = db.get(models.Pedido, pedido_id)
     if pedido is None:
         return None
-    novos_itens = _montar_itens(db, dados.itens)
+    produtos_ja_aceitos = frozenset(item.produto_id for item in pedido.itens)
+    novos_itens = _montar_itens(db, dados.itens, produtos_ja_aceitos)
     pedido.cliente_nome = dados.cliente_nome
     pedido.observacao = dados.observacao
     pedido.itens = novos_itens

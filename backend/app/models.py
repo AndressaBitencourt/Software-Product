@@ -58,4 +58,3 @@ class ItemPedido(Base):
     preco_unitario: Mapped[Decimal] = mapped_column(Numeric(10, 2))
 
     pedido: Mapped["Pedido"] = relationship(back_populates="itens")
-    produto: Mapped["Produto"] = relationship(lazy="joined")

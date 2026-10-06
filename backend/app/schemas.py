@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 from decimal import Decimal
 from typing import Annotated
 
-from pydantic import BaseModel, ConfigDict, Field, PlainSerializer
+from pydantic import BaseModel, ConfigDict, Field, PlainSerializer, field_validator
 
 Money = Annotated[
     Decimal, PlainSerializer(lambda v: f"{Decimal(v):.2f}", return_type=str)
@@ -35,9 +35,17 @@ class ProdutoOut(BaseModel):
 class ProdutoIn(BaseModel):
     nome: str = Field(min_length=1, max_length=80)
     descricao: str | None = Field(default=None, max_length=255)
-    preco: Decimal = Field(gt=0)
+    preco: Decimal = Field(gt=0, max_digits=10, decimal_places=2)
     categoria: str = Field(min_length=1, max_length=40)
     disponivel: bool = True
+
+    @field_validator("nome", "categoria", mode="after")
+    @classmethod
+    def _remover_espacos(cls, valor: str) -> str:
+        valor = valor.strip()
+        if not valor:
+            raise ValueError("não pode ser só espaços.")
+        return valor
 
 
 class ItemPedidoIn(BaseModel):

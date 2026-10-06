@@ -215,3 +215,45 @@ def test_produto_nome_e_snapshot(client: TestClient, db_session) -> None:
 
     depois = client.get(f"/api/pedidos/{criado['id']}").json()
     assert depois["itens"][0]["produto_nome"] == "X-Salada"
+
+
+def test_editar_pedido_mantem_item_que_ficou_indisponivel(
+    client: TestClient, db_session
+) -> None:
+    from app import models
+
+    criado = client.post("/api/pedidos", json=PEDIDO_VALIDO).json()
+
+    db_session.get(models.Produto, 1).disponivel = False
+    db_session.commit()
+
+    resp = client.put(
+        f"/api/pedidos/{criado['id']}",
+        json={
+            "cliente_nome": "Maria Atualizada",
+            "itens": PEDIDO_VALIDO["itens"],
+        },
+    )
+    assert resp.status_code == 200
+    assert resp.json()["cliente_nome"] == "Maria Atualizada"
+
+
+def test_editar_pedido_nao_pode_adicionar_produto_indisponivel(
+    client: TestClient, db_session
+) -> None:
+    from app import models
+
+    criado = client.post("/api/pedidos", json=PEDIDO_VALIDO).json()
+
+    db_session.get(models.Produto, 3).disponivel = False  # X-Tudo, nao estava no pedido
+    db_session.commit()
+
+    resp = client.put(
+        f"/api/pedidos/{criado['id']}",
+        json={
+            "cliente_nome": "Maria",
+            "itens": [{"produto_id": 3, "quantidade": 1}],
+        },
+    )
+    assert resp.status_code == 400
+    assert "indisponível" in resp.json()["detail"]

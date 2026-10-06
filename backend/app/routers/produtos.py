@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
-from app import crud, schemas
+from app import crud, models, schemas
 from app.database import get_db
 
 router = APIRouter(prefix="/api/produtos", tags=["produtos"])
@@ -10,7 +10,7 @@ router = APIRouter(prefix="/api/produtos", tags=["produtos"])
 @router.get("", response_model=list[schemas.ProdutoOut])
 def listar(
     incluir_indisponiveis: bool = False, db: Session = Depends(get_db)
-) -> list[schemas.ProdutoOut]:
+) -> list[models.Produto]:
     return crud.listar_produtos(db, incluir_indisponiveis)
 
 
@@ -29,7 +29,7 @@ def criar(dados: schemas.ProdutoIn, db: Session = Depends(get_db)):
     try:
         produto = crud.criar_produto(db, dados)
     except crud.RegraNegocioError as erro:
-        raise HTTPException(status_code=400, detail=erro.mensagem)
+        raise HTTPException(status_code=400, detail=erro.mensagem) from erro
     return produto
 
 
@@ -40,7 +40,7 @@ def atualizar(
     try:
         produto = crud.atualizar_produto(db, produto_id, dados)
     except crud.RegraNegocioError as erro:
-        raise HTTPException(status_code=400, detail=erro.mensagem)
+        raise HTTPException(status_code=400, detail=erro.mensagem) from erro
     if produto is None:
         raise HTTPException(status_code=404, detail="Produto não encontrado.")
     return produto
@@ -51,6 +51,6 @@ def excluir(produto_id: int, db: Session = Depends(get_db)):
     try:
         encontrou = crud.excluir_produto(db, produto_id)
     except crud.RegraNegocioError as erro:
-        raise HTTPException(status_code=400, detail=erro.mensagem)
+        raise HTTPException(status_code=400, detail=erro.mensagem) from erro
     if not encontrou:
         raise HTTPException(status_code=404, detail="Produto não encontrado.")
