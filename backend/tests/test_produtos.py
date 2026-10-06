@@ -158,3 +158,20 @@ def test_excluir_produto_com_pedido_400(client: TestClient) -> None:
 def test_excluir_produto_inexistente_404(client: TestClient) -> None:
     resp = client.delete("/api/produtos/999")
     assert resp.status_code == 404
+
+
+def test_editar_produto_mantendo_proprio_nome(client: TestClient) -> None:
+    atual = client.get("/api/produtos/1").json()
+    resp = client.put(
+        "/api/produtos/1",
+        json={
+            "nome": atual["nome"],
+            "descricao": atual["descricao"],
+            "preco": atual["preco"],
+            "categoria": atual["categoria"],
+            "disponivel": False,
+        },
+    )
+    assert resp.status_code == 200
+    assert resp.json()["disponivel"] is False
+    assert len(client.get("/api/produtos").json()) == 7
