@@ -1,7 +1,7 @@
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from app import models, schemas
+from app import models, schemas, uploads
 from app.models import utcnow
 
 
@@ -64,6 +64,27 @@ def atualizar_produto(
     produto.preco = dados.preco
     produto.categoria = dados.categoria
     produto.disponivel = dados.disponivel
+    db.commit()
+    db.refresh(produto)
+    return produto
+
+
+async def salvar_imagem_produto(
+    db: Session, produto_id: int, arquivo
+) -> models.Produto | None:
+    produto = db.get(models.Produto, produto_id)
+    if produto is None:
+        return None
+    extensao = uploads.extensao_valida(arquivo.filename or "")
+    if extensao is None:
+        raise RegraNegocioError(
+            "Formato de imagem não suportado. Use JPG, PNG ou WEBP."
+        )
+    conteudo = await arquivo.read()
+    if len(conteudo) > uploads.TAMANHO_MAXIMO_BYTES:
+        raise RegraNegocioError("Imagem muito grande — o limite é 5 MB.")
+    uploads.remover_arquivo(produto.imagem_url)
+    produto.imagem_url = uploads.salvar_arquivo(produto_id, extensao, conteudo)
     db.commit()
     db.refresh(produto)
     return produto
@@ -161,6 +182,7 @@ def excluir_produto(db: Session, produto_id: int) -> bool:
             "Não é possível excluir — esse produto já aparece em pedidos. "
             "Marque como indisponível em vez de excluir."
         )
+    uploads.remover_arquivo(produto.imagem_url)
     db.delete(produto)
     db.commit()
     return True

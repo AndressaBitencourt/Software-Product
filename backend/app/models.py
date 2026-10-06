@@ -22,6 +22,7 @@ class Produto(Base):
     preco: Mapped[Decimal] = mapped_column(Numeric(10, 2))
     categoria: Mapped[str] = mapped_column(String(40))
     disponivel: Mapped[bool] = mapped_column(Boolean, default=True)
+    imagem_url: Mapped[str | None] = mapped_column(String(255), default=None)
 
 
 class Pedido(Base):
