@@ -3,15 +3,6 @@
 Nenhum destes bloqueia a Fase 1. São melhorias que anotei para encaixar quando
 a Fase 2 (CRUD de cardápio) mexer nas áreas relacionadas.
 
-## Segurança / front-end
-
-- `frontend/app.js` **e** `frontend/admin.js` (novo na Fase 2a): trocar a
-  interpolação em `innerHTML` por `textContent` / `createElement` ou um
-  helper `esc()`. Previsto desde a Fase 1 — na Fase 2a o `nome`/`categoria`
-  do produto já passaram a ser texto livre editável pelo usuário (via
-  `cardapio-admin.html`), então a superfície cresceu de verdade. Continua
-  sem risco real hoje: app de um usuário só, sem login até a Fase 3.
-
 ## Back-end — limpeza
 
 - `backend/app/routers/pedidos.py`: `raise HTTPException(...) from erro`
@@ -56,3 +47,22 @@ a Fase 2 (CRUD de cardápio) mexer nas áreas relacionadas.
 
 - `.dockerignore`: prefixo `**/` também em `.DS_Store`.
 - Build multi-stage para não levar `pytest`/`httpx` para a imagem final.
+
+## Resolvido nas melhorias visuais da Fase 2a
+
+- ~~`frontend/app.js` e `frontend/admin.js`: escapar interpolação em
+  `innerHTML`~~ — feito. Adicionei um helper `esc()` (duplicado nos dois
+  arquivos) e apliquei em todo ponto que interpola texto livre
+  (nome/categoria/descrição de produto, nome do cliente, observação,
+  nome do produto no detalhe do pedido). A revisão final achou que dava
+  pra quebrar atributo (`alt=`/`src=`) com aspas no nome do produto —
+  por isso resolvi na hora em vez de adiar de novo.
+
+## Itens menores que adiei de novo (não bloqueiam nada)
+
+- Os 9 SVGs novos (`frontend/images/seed/`) não têm quebra de linha no
+  fim do arquivo — cosmético, sem config de lint no projeto que reclame.
+- 3 dos 6 testes de upload com erro (formato inválido, produto
+  inexistente, tamanho excedido) checam só o `status_code`, não que zero
+  arquivos foram gravados — o comportamento está certo (confirmei), só
+  falta a asserção que provaria isso formalmente.
