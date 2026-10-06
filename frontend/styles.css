@@ -88,3 +88,14 @@ th, td { border: 1px solid #e6ddd0; padding: 8px; text-align: left; font-size: 0
   thead { display: none; }
   td { border: 0; border-bottom: 1px solid #eee; }
 }
+header nav { margin-top: 6px; }
+header nav a {
+  color: #fff;
+  text-decoration: underline;
+  font-size: 0.9rem;
+}
+input[type="checkbox"] {
+  display: inline-block;
+  width: auto;
+  margin-right: 6px;
+}

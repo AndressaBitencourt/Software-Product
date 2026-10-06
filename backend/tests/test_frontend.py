@@ -7,3 +7,10 @@ def test_raiz_serve_o_index(client: TestClient) -> None:
     assert resp.status_code == 200
     assert "Hamburgueria" in resp.text
     assert "app.js" in resp.text
+
+
+def test_cardapio_admin_serve_a_pagina(client: TestClient) -> None:
+    resp = client.get("/cardapio-admin.html")
+    assert resp.status_code == 200
+    assert "Cardápio" in resp.text
+    assert "admin.js" in resp.text

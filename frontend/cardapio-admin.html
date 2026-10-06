@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Hamburgueria — Cardápio</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header>
+    <h1>🍔 Hamburgueria — Cardápio</h1>
+    <nav><a href="/">Pedidos</a></nav>
+  </header>
+
+  <div id="aviso" class="aviso" hidden></div>
+
+  <main>
+    <section id="secao-form">
+      <h2 id="form-titulo">Novo produto</h2>
+      <form id="form-produto">
+        <label>Nome
+          <input type="text" id="nome" maxlength="80" required />
+        </label>
+        <label>Descrição
+          <input type="text" id="descricao" maxlength="255" />
+        </label>
+        <label>Preço (R$)
+          <input type="number" id="preco" min="0.01" step="0.01" required />
+        </label>
+        <label>Categoria
+          <input type="text" id="categoria" maxlength="40" required />
+        </label>
+        <label>
+          <input type="checkbox" id="disponivel" checked />
+          Disponível
+        </label>
+
+        <div class="acoes">
+          <button type="submit" id="btn-salvar">Salvar produto</button>
+          <button type="button" id="btn-cancelar" hidden>Cancelar edição</button>
+        </div>
+      </form>
+    </section>
+
+    <section id="secao-produtos">
+      <h2>Produtos</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Nome</th><th>Categoria</th><th>Preço</th>
+            <th>Disponível</th><th></th>
+          </tr>
+        </thead>
+        <tbody id="lista-produtos"></tbody>
+      </table>
+      <p id="produtos-vazio" hidden>Nenhum produto cadastrado.</p>
+    </section>
+  </main>
+
+  <script src="admin.js"></script>
+</body>
+</html>
