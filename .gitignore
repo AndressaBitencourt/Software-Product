@@ -8,6 +8,8 @@ venv/
 .mypy_cache/
 .ruff_cache/
 
+backend/uploads/
+
 # Banco de dados local
 *.db
 *.sqlite3
@@ -20,3 +22,4 @@ venv/
 Thumbs.db
 .vscode/
 .idea/
+.superpowers/

@@ -7,3 +7,28 @@ def test_raiz_serve_o_index(client: TestClient) -> None:
     assert resp.status_code == 200
     assert "Hamburgueria" in resp.text
     assert "app.js" in resp.text
+
+
+def test_cardapio_admin_serve_a_pagina(client: TestClient) -> None:
+    resp = client.get("/cardapio-admin.html")
+    assert resp.status_code == 200
+    assert "Cardápio" in resp.text
+    assert "admin.js" in resp.text
+
+
+def test_foto_do_seed_e_servida(client: TestClient) -> None:
+    resp = client.get("/images/seed/x-salada.jpg")
+    assert resp.status_code == 200
+    assert resp.headers["content-type"] == "image/jpeg"
+
+
+def test_placeholder_de_imagem_e_servido(client: TestClient) -> None:
+    resp = client.get("/images/seed/placeholder.svg")
+    assert resp.status_code == 200
+    assert "<svg" in resp.text
+
+
+def test_cardapio_admin_tem_campo_de_imagem(client: TestClient) -> None:
+    resp = client.get("/cardapio-admin.html")
+    assert 'id="imagem"' in resp.text
+    assert 'id="preview-imagem"' in resp.text

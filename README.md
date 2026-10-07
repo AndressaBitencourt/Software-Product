@@ -1,7 +1,9 @@
 # Software-Product — Sistema de Pedidos da Hamburgueria
 
 Este é o meu trabalho de faculdade, entregue em 3 fases. Na **Fase 1** eu fiz o
-CRUD completo de pedidos, com front-end, back-end e banco de dados.
+CRUD completo de pedidos, com front-end, back-end e banco de dados. Na **Fase
+2a** acrescentei a gestão de cardápio — criar, editar e excluir produtos,
+numa página própria.
 
 ## Tecnologias que usei
 
@@ -12,6 +14,12 @@ CRUD completo de pedidos, com front-end, back-end e banco de dados.
 - Empacotamento: Docker + docker-compose
 
 ## Como rodar
+
+> **Atualizando de uma fase anterior?** Apague `backend/app.db` (ou rode
+> `docker compose down -v`) antes de subir — a Fase 2a adicionou colunas
+> novas (`item_pedido.produto_nome`, `produto.imagem_url`) e o projeto não
+> tem migração de schema (sem Alembic), então um banco antigo quebra com
+> `no such column`.
 
 ### Opção mais fácil — script pronto
 
@@ -77,7 +85,7 @@ pytest -v
 
 - `backend/app/` — API FastAPI (models, schemas, crud, serializers, routers)
 - `backend/tests/` — meus testes automatizados
-- `frontend/` — página única servida pelo próprio back-end
+- `frontend/` — duas páginas servidas pelo próprio back-end: pedidos (`index.html`) e gestão de cardápio (`cardapio-admin.html`)
 - `docs/` — o design e o plano de implementação que escrevi antes de codar
 
 ## Roadmap

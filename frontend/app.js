@@ -20,6 +20,28 @@ function brl(valorStr) {
   return n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 }
 
+function esc(valor) {
+  return String(valor ?? "").replace(/[&<>"']/g, (c) =>
+    ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])
+  );
+}
+
+function initMenu() {
+  const btn = $("#btn-menu");
+  const menu = $("#menu-nav");
+  btn.addEventListener("click", () => {
+    const vaiAbrir = menu.hidden;
+    menu.hidden = !vaiAbrir;
+    btn.setAttribute("aria-expanded", String(vaiAbrir));
+  });
+  document.addEventListener("click", (e) => {
+    if (!menu.hidden && !menu.contains(e.target) && e.target !== btn) {
+      menu.hidden = true;
+      btn.setAttribute("aria-expanded", "false");
+    }
+  });
+}
+
 async function api(caminho, opcoes) {
   const resp = await fetch(API + caminho, {
     headers: { "Content-Type": "application/json" },
@@ -45,9 +67,10 @@ async function carregarCardapio() {
     const div = document.createElement("div");
     div.className = "card";
     div.innerHTML = `
-      <strong>${p.nome}</strong>
-      <small>${p.categoria}</small>
-      <span>${p.descricao ?? ""}</span>
+      <img class="card-img" src="${esc(p.imagem_url || "/images/seed/placeholder.svg")}" alt="${esc(p.nome)}" />
+      <strong>${esc(p.nome)}</strong>
+      <small>${esc(p.categoria)}</small>
+      <span>${esc(p.descricao ?? "")}</span>
       <span class="preco">${brl(p.preco)}</span>
       <button type="button" data-id="${p.id}">Adicionar</button>`;
     div.querySelector("button").addEventListener("click", () => adicionar(p.id));
@@ -162,7 +185,7 @@ async function carregarPedidos() {
     const tr = document.createElement("tr");
     tr.innerHTML = `
       <td>${p.id}</td>
-      <td>${p.cliente_nome}</td>
+      <td>${esc(p.cliente_nome)}</td>
       <td>${p.quantidade_itens}</td>
       <td>${brl(p.total)}</td>
       <td>${p.status}</td>
@@ -217,11 +240,11 @@ async function verDetalhe(pedidoId, linha) {
     const linhas = p.itens
       .map(
         (i) =>
-          `${i.quantidade}x ${i.produto_nome} — ${brl(i.preco_unitario)} (subtotal ${brl(i.subtotal)})`
+          `${i.quantidade}x ${esc(i.produto_nome)} — ${brl(i.preco_unitario)} (subtotal ${brl(i.subtotal)})`
       )
       .join("<br />");
     tr.innerHTML = `<td colspan="7">${linhas}<br /><strong>Total: ${brl(p.total)}</strong>${
-      p.observacao ? "<br />Obs.: " + p.observacao : ""
+      p.observacao ? "<br />Obs.: " + esc(p.observacao) : ""
     }</td>`;
     linha.after(tr);
   } catch (e) {
@@ -231,6 +254,7 @@ async function verDetalhe(pedidoId, linha) {
 
 $("#form-pedido").addEventListener("submit", submeter);
 $("#btn-cancelar").addEventListener("click", sairModoEdicao);
+initMenu();
 
 (async function iniciar() {
   try {

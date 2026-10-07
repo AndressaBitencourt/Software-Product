@@ -4,11 +4,18 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Hamburgueria — Pedidos</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600&family=Work+Sans:wght@400;500;600&display=swap">
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <header>
     <h1>🍔 Hamburgueria — Pedidos</h1>
+    <button class="hamb-btn" id="btn-menu" aria-label="Abrir menu" aria-expanded="false">☰</button>
+    <nav class="hamb-menu" id="menu-nav" hidden>
+      <a href="/" class="active">Pedidos</a>
+      <a href="/cardapio-admin.html">Cardápio</a>
+    </nav>
   </header>
 
   <div id="aviso" class="aviso" hidden></div>
