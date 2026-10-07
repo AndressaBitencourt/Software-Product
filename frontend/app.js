@@ -5,6 +5,9 @@ let cardapio = [];
 let carrinho = []; // [{ produto_id, nome, preco, quantidade }]
 let editandoId = null;
 let categoriaAtiva = "Todos";
+let carrosselItens = [];
+let carrosselIndex = 0;
+let carrosselTimer = null;
 
 const $ = (sel) => document.querySelector(sel);
 
@@ -61,9 +64,11 @@ async function api(caminho, opcoes) {
 }
 
 function renderAbasCategoria() {
-  const categorias = ["Todos", ...new Set(cardapio.map((p) => p.categoria))].sort(
-    (a, b) => (a === "Todos" ? -1 : b === "Todos" ? 1 : a.localeCompare(b, "pt-BR"))
+  const temPromocao = cardapio.some((p) => p.em_promocao);
+  const categoriasReais = [...new Set(cardapio.map((p) => p.categoria))].sort((a, b) =>
+    a.localeCompare(b, "pt-BR")
   );
+  const categorias = ["Todos", ...(temPromocao ? ["Promoções"] : []), ...categoriasReais];
   if (!categorias.includes(categoriaAtiva)) categoriaAtiva = "Todos";
   const tabs = $("#categoria-tabs");
   tabs.innerHTML = "";
@@ -87,17 +92,26 @@ function renderCardapio() {
   const visiveis =
     categoriaAtiva === "Todos"
       ? cardapio
-      : cardapio.filter((p) => p.categoria === categoriaAtiva);
+      : categoriaAtiva === "Promoções"
+        ? cardapio.filter((p) => p.em_promocao)
+        : cardapio.filter((p) => p.categoria === categoriaAtiva);
   for (const p of visiveis) {
     const div = document.createElement("div");
     div.className = "card";
+    const precoHtml = p.em_promocao
+      ? `<span class="preco-riscado">${brl(p.preco)}</span><span class="preco">${brl(p.preco_promocional)}</span>`
+      : `<span class="preco">${brl(p.preco)}</span>`;
+    const badge = p.em_promocao ? `<span class="badge-oferta">Oferta</span>` : "";
     div.innerHTML = `
-      <img class="card-img" src="${esc(p.imagem_url || "/images/seed/placeholder.svg")}" alt="${esc(p.nome)}" />
+      <div class="card-img-wrap">
+        <img class="card-img" src="${esc(p.imagem_url || "/images/seed/placeholder.svg")}" alt="${esc(p.nome)}" />
+        ${badge}
+      </div>
       <div class="card-body">
         <strong>${esc(p.nome)}</strong>
         <small>${esc(p.categoria)}</small>
         <span>${esc(p.descricao ?? "")}</span>
-        <span class="preco">${brl(p.preco)}</span>
+        ${precoHtml}
         <button type="button" data-id="${p.id}">Adicionar</button>
       </div>`;
     div.querySelector("button").addEventListener("click", () => adicionar(p.id));
@@ -105,10 +119,91 @@ function renderCardapio() {
   }
 }
 
+function pararCarrossel() {
+  if (carrosselTimer) {
+    clearInterval(carrosselTimer);
+    carrosselTimer = null;
+  }
+}
+
+function iniciarCarrossel() {
+  pararCarrossel();
+  if (carrosselItens.length > 1) {
+    carrosselTimer = setInterval(proximoSlideCarrossel, 5000);
+  }
+}
+
+function aplicarPosicaoCarrossel() {
+  $("#carrossel-trilha").style.transform = `translateX(-${carrosselIndex * 100}%)`;
+  document.querySelectorAll(".carrossel-dot").forEach((dot, i) => {
+    dot.classList.toggle("ativo", i === carrosselIndex);
+  });
+}
+
+function irParaSlideCarrossel(indice) {
+  carrosselIndex = indice;
+  aplicarPosicaoCarrossel();
+  iniciarCarrossel();
+}
+
+function proximoSlideCarrossel() {
+  carrosselIndex = (carrosselIndex + 1) % carrosselItens.length;
+  aplicarPosicaoCarrossel();
+}
+
+function slideAnteriorCarrossel() {
+  carrosselIndex = (carrosselIndex - 1 + carrosselItens.length) % carrosselItens.length;
+  aplicarPosicaoCarrossel();
+}
+
+function renderCarrossel() {
+  carrosselItens = cardapio.filter((p) => p.em_promocao);
+  const secao = $("#secao-ofertas");
+  if (carrosselItens.length === 0) {
+    secao.hidden = true;
+    pararCarrossel();
+    return;
+  }
+  secao.hidden = false;
+
+  const trilha = $("#carrossel-trilha");
+  trilha.innerHTML = "";
+  for (const p of carrosselItens) {
+    const slide = document.createElement("div");
+    slide.className = "carrossel-slide";
+    slide.innerHTML = `
+      <img src="${esc(p.imagem_url || "/images/seed/placeholder.svg")}" alt="${esc(p.nome)}" />
+      <div class="carrossel-info">
+        <strong>${esc(p.nome)}</strong>
+        <span class="preco-riscado">${brl(p.preco)}</span>
+        <span class="preco">${brl(p.preco_promocional)}</span>
+        <button type="button" data-id="${p.id}">Adicionar</button>
+      </div>`;
+    slide.querySelector("button").addEventListener("click", () => adicionar(p.id));
+    trilha.appendChild(slide);
+  }
+
+  const dots = $("#carrossel-dots");
+  dots.innerHTML = "";
+  carrosselItens.forEach((_, i) => {
+    const dot = document.createElement("button");
+    dot.type = "button";
+    dot.className = "carrossel-dot" + (i === 0 ? " ativo" : "");
+    dot.setAttribute("aria-label", `Ir para oferta ${i + 1}`);
+    dot.addEventListener("click", () => irParaSlideCarrossel(i));
+    dots.appendChild(dot);
+  });
+
+  carrosselIndex = 0;
+  aplicarPosicaoCarrossel();
+  iniciarCarrossel();
+}
+
 async function carregarCardapio() {
   cardapio = await api("/produtos");
   renderAbasCategoria();
   renderCardapio();
+  renderCarrossel();
 }
 
 function adicionar(produtoId) {
@@ -287,6 +382,14 @@ async function verDetalhe(pedidoId, linha) {
 
 $("#form-pedido").addEventListener("submit", submeter);
 $("#btn-cancelar").addEventListener("click", sairModoEdicao);
+$(".carrossel-anterior").addEventListener("click", () => {
+  slideAnteriorCarrossel();
+  iniciarCarrossel();
+});
+$(".carrossel-proxima").addEventListener("click", () => {
+  proximoSlideCarrossel();
+  iniciarCarrossel();
+});
 initMenu();
 
 (async function iniciar() {

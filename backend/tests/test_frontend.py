@@ -32,3 +32,14 @@ def test_cardapio_admin_tem_campo_de_imagem(client: TestClient) -> None:
     resp = client.get("/cardapio-admin.html")
     assert 'id="imagem"' in resp.text
     assert 'id="preview-imagem"' in resp.text
+
+
+def test_cardapio_admin_tem_campos_de_promocao(client: TestClient) -> None:
+    resp = client.get("/cardapio-admin.html")
+    assert 'id="em_promocao"' in resp.text
+    assert 'id="preco_promocional"' in resp.text
+
+
+def test_index_tem_carrossel_de_ofertas(client: TestClient) -> None:
+    resp = client.get("/")
+    assert 'id="carrossel-ofertas"' in resp.text

@@ -71,6 +71,8 @@ function entrarModoEdicao(produto) {
   $("#preco").value = produto.preco;
   $("#categoria").value = produto.categoria;
   $("#disponivel").checked = produto.disponivel;
+  $("#em_promocao").checked = produto.em_promocao;
+  $("#preco_promocional").value = produto.preco_promocional ?? "";
   const preview = $("#preview-imagem");
   if (produto.imagem_url) {
     preview.src = produto.imagem_url;
@@ -118,6 +120,8 @@ async function submeter(evento) {
     preco: $("#preco").value,
     categoria: $("#categoria").value.trim(),
     disponivel: $("#disponivel").checked,
+    em_promocao: $("#em_promocao").checked,
+    preco_promocional: $("#preco_promocional").value || null,
   };
   const estavaEditando = Boolean(editandoId);
   const arquivoParaEnviar = arquivoSelecionado;
@@ -183,6 +187,7 @@ async function carregarProdutos() {
       <td>${esc(p.categoria)}</td>
       <td>${brl(p.preco)}</td>
       <td>${p.disponivel ? "Sim" : "Não"}</td>
+      <td>${p.em_promocao ? brl(p.preco_promocional) : "—"}</td>
       <td></td>`;
     const acoes = tr.lastElementChild;
 

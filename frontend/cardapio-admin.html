@@ -41,6 +41,13 @@
           <input type="checkbox" id="disponivel" checked />
           Disponível
         </label>
+        <label>
+          <input type="checkbox" id="em_promocao" />
+          Em promoção
+        </label>
+        <label>Preço promocional (R$)
+          <input type="number" id="preco_promocional" min="0.01" step="0.01" />
+        </label>
         <label>Foto do produto
           <input type="file" id="imagem" accept="image/jpeg,image/png,image/webp" />
         </label>
@@ -59,7 +66,7 @@
         <thead>
           <tr>
             <th>Foto</th><th>Nome</th><th>Categoria</th><th>Preço</th>
-            <th>Disponível</th><th></th>
+            <th>Disponível</th><th>Promoção</th><th></th>
           </tr>
         </thead>
         <tbody id="lista-produtos"></tbody>
