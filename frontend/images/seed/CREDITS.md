@@ -13,7 +13,7 @@ mantidos por transparência acadêmica, não por obrigação de licença.
 | `x-vegetariano.jpg` | [Burger With Green Leafy Vegetable and Cheese on Black Plate](https://www.pexels.com/photo/burger-with-green-leafy-vegetable-and-cheese-on-black-plate-1199958/) | Valeria Boltneva |
 | `batata-frita.jpg` | [Close Up Photo of French Fries](https://www.pexels.com/photo/close-up-photo-of-french-fries-4109234/) | Polina Tankilevitch |
 | `onion-rings.jpg` | [Crispy Onion Rings in Restaurant Setting](https://www.pexels.com/photo/crispy-onion-rings-in-restaurant-setting-37358770/) | Nancy Pasel |
-| `refrigerante.jpg` | [Cherry Flavored Coke Can with Droplets on Black Background](https://www.pexels.com/photo/cherry-flavored-coke-can-with-droplets-on-black-background-31966524/) | Christopher Welsch Leveroni |
+| `refrigerante.jpg` | [A Can of Coca-Cola](https://www.pexels.com/photo/a-can-of-coca-cola-17236593/) | Ata Yarahmadi |
 | `suco.jpg` | [Orange Juice in Clear Plastic Glass](https://www.pexels.com/photo/orange-juice-in-clear-plastic-glass-6416553/) | Charlotte May |
 
 `placeholder.svg` continua sendo uma ilustração própria (sem foto associada), usada
