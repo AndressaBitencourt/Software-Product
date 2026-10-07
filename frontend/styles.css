@@ -68,7 +68,7 @@ header h1 { margin: 0; font-size: 1.4rem; padding-right: 56px; }
   text-decoration: none;
   font-weight: 500;
 }
-.hamb-menu a.active { background: #FBEFD9; color: #8A4200; }
+.hamb-menu a.active { font-weight: 700; color: var(--header); }
 .hamb-menu a:hover { background: #F6F1E6; }
 
 main {
