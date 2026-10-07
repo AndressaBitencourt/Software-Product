@@ -12,8 +12,8 @@ mantidos por transparência acadêmica, não por obrigação de licença.
 | `x-tudo.jpg` | [Cheeseburger on Table](https://www.pexels.com/photo/cheeseburger-on-table-2089717/) | Adrian Dorobantu |
 | `x-vegetariano.jpg` | [Burger With Green Leafy Vegetable and Cheese on Black Plate](https://www.pexels.com/photo/burger-with-green-leafy-vegetable-and-cheese-on-black-plate-1199958/) | Valeria Boltneva |
 | `batata-frita.jpg` | [Close Up Photo of French Fries](https://www.pexels.com/photo/close-up-photo-of-french-fries-4109234/) | Polina Tankilevitch |
-| `onion-rings.jpg` | [Onion rings and ketchup with chili peppers on blue surface](https://www.pexels.com/photo/onion-rings-and-ketchup-with-chili-peppers-on-blue-surface-6941051/) | Alena Shekhovtcova |
-| `refrigerante.jpg` | [Glass of Soda With Ice Cubes](https://www.pexels.com/photo/glass-of-soda-with-ice-cubes-8880742/) | cottonbro studio |
+| `onion-rings.jpg` | [Onion Rings in Close-up Photography](https://www.pexels.com/photo/onion-rings-in-close-up-photography-8880734/) | Ron Lach |
+| `refrigerante.jpg` | [Close-up Shot of a Tin Can](https://www.pexels.com/photo/close-up-shot-of-a-tin-can-7033796/) | Tima Miroshnichenko |
 | `suco.jpg` | [Orange Juice in Clear Plastic Glass](https://www.pexels.com/photo/orange-juice-in-clear-plastic-glass-6416553/) | Charlotte May |
 
 `placeholder.svg` continua sendo uma ilustração própria (sem foto associada), usada
