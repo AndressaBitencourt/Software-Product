@@ -171,8 +171,11 @@ function renderCarrossel() {
   for (const p of carrosselItens) {
     const slide = document.createElement("div");
     slide.className = "carrossel-slide";
+    const foto = p.imagem_url || "/images/seed/placeholder.svg";
+    slide.style.backgroundImage =
+      "linear-gradient(to top, rgba(20,12,8,.88), rgba(20,12,8,.25) 55%, transparent), " +
+      `url("${foto.replace(/"/g, "%22")}")`;
     slide.innerHTML = `
-      <img src="${esc(p.imagem_url || "/images/seed/placeholder.svg")}" alt="${esc(p.nome)}" />
       <div class="carrossel-info">
         <strong>${esc(p.nome)}</strong>
         <span class="preco-riscado">${brl(p.preco)}</span>

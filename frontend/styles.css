@@ -127,28 +127,27 @@ h2 { border-bottom: 2px solid var(--line); padding-bottom: 4px; font-size: 1.2re
 }
 .carrossel-slide {
   min-width: 100%;
+  min-height: 380px;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 32px;
-  padding: 32px 64px;
-}
-.carrossel-slide img {
-  width: 220px;
-  height: 220px;
-  object-fit: cover;
-  border-radius: 12px;
-  flex-shrink: 0;
+  align-items: flex-end;
+  background-size: cover;
+  background-position: center;
 }
 .carrossel-info {
   display: flex;
   flex-direction: column;
   gap: 8px;
   align-items: flex-start;
+  padding: 28px 40px;
+  color: #fff;
 }
-.carrossel-info strong { font-size: 1.6rem; }
-.carrossel-info .preco-riscado { font-size: 1rem; }
-.carrossel-info .preco { font-size: 1.3rem; }
+.carrossel-info strong {
+  font-size: 1.9rem;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.45);
+}
+.carrossel-info .preco-riscado { color: rgba(255, 255, 255, 0.75); font-size: 1.05rem; }
+.carrossel-info .preco { color: #fff; font-size: 1.4rem; }
+.carrossel-info button { background: var(--accent); color: var(--accent-ink); }
 .carrossel-seta {
   position: absolute;
   top: 50%;
@@ -299,13 +298,9 @@ th { background: #F6F0E2; font-family: "Fraunces", serif; font-weight: 600; }
   table, thead, tbody, th, td, tr { display: block; }
   thead { display: none; }
   td { border: 0; border-bottom: 1px solid var(--line); }
-  .carrossel-slide {
-    flex-direction: column;
-    align-items: flex-start;
-    padding: 16px;
-    gap: 12px;
-  }
-  .carrossel-slide img { width: 100%; height: 180px; }
+  .carrossel-slide { min-height: 260px; }
+  .carrossel-info { padding: 18px 20px; }
+  .carrossel-info strong { font-size: 1.4rem; }
   #secao-ofertas { padding: 16px 16px 0; }
 }
 
