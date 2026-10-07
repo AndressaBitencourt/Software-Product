@@ -60,6 +60,7 @@ header h1 { margin: 0; font-size: 1.4rem; padding-right: 56px; }
   min-width: 170px;
   z-index: 20;
 }
+.hamb-menu[hidden] { display: none; }
 .hamb-menu a {
   padding: 9px 12px;
   border-radius: 7px;
