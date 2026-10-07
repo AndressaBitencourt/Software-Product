@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
@@ -35,6 +37,20 @@ def _nome_de_produto_em_uso(
     return db.scalar(stmt) is not None
 
 
+def _preco_promocional_valido(dados: schemas.ProdutoIn) -> Decimal | None:
+    if not dados.em_promocao:
+        return None
+    if dados.preco_promocional is None:
+        raise RegraNegocioError(
+            "Produto em promoção precisa de um preço promocional."
+        )
+    if dados.preco_promocional >= dados.preco:
+        raise RegraNegocioError(
+            "O preço promocional precisa ser menor que o preço normal."
+        )
+    return dados.preco_promocional
+
+
 def criar_produto(db: Session, dados: schemas.ProdutoIn) -> models.Produto:
     if _nome_de_produto_em_uso(db, dados.nome):
         raise RegraNegocioError(f"Já existe um produto chamado '{dados.nome}'.")
@@ -44,6 +60,8 @@ def criar_produto(db: Session, dados: schemas.ProdutoIn) -> models.Produto:
         preco=dados.preco,
         categoria=dados.categoria,
         disponivel=dados.disponivel,
+        em_promocao=dados.em_promocao,
+        preco_promocional=_preco_promocional_valido(dados),
     )
     db.add(produto)
     db.commit()
@@ -64,6 +82,8 @@ def atualizar_produto(
     produto.preco = dados.preco
     produto.categoria = dados.categoria
     produto.disponivel = dados.disponivel
+    produto.em_promocao = dados.em_promocao
+    produto.preco_promocional = _preco_promocional_valido(dados)
     db.commit()
     db.refresh(produto)
     return produto

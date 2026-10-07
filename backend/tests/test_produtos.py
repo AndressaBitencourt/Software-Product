@@ -8,25 +8,26 @@ from app import models, uploads
 from app.seed import CARDAPIO_INICIAL, seed_cardapio
 
 
-def test_seed_popula_oito_itens(db_session: Session) -> None:
+def test_seed_popula_dezessete_itens(db_session: Session) -> None:
     inseridos = seed_cardapio(db_session)
-    assert inseridos == 8
-    assert db_session.query(models.Produto).count() == 8
+    assert inseridos == 17
+    assert db_session.query(models.Produto).count() == 17
 
 
 def test_seed_e_idempotente(db_session: Session) -> None:
-    assert seed_cardapio(db_session) == 8
+    assert seed_cardapio(db_session) == 17
     assert seed_cardapio(db_session) == 0
-    assert db_session.query(models.Produto).count() == 8
+    assert db_session.query(models.Produto).count() == 17
 
 
-def test_cardapio_inicial_tem_quatro_categorias(db_session: Session) -> None:
+def test_cardapio_inicial_tem_cinco_categorias(db_session: Session) -> None:
     categorias = {item["categoria"] for item in CARDAPIO_INICIAL}
     assert categorias == {
         "Clássicos",
         "Especiais",
         "Acompanhamentos",
         "Bebidas",
+        "Sobremesas",
     }
 
 
@@ -34,10 +35,11 @@ def test_get_produtos_retorna_seed(client: TestClient) -> None:
     resp = client.get("/api/produtos")
     assert resp.status_code == 200
     corpo = resp.json()
-    assert len(corpo) == 8
+    assert len(corpo) == 17
     primeiro = corpo[0]
     assert set(primeiro) == {
-        "id", "nome", "descricao", "preco", "categoria", "disponivel", "imagem_url"
+        "id", "nome", "descricao", "preco", "categoria", "disponivel",
+        "imagem_url", "em_promocao", "preco_promocional",
     }
     assert isinstance(primeiro["preco"], str)
     assert primeiro["preco"].count(".") == 1
@@ -51,10 +53,10 @@ def test_get_produtos_incluir_indisponiveis(client: TestClient, db_session) -> N
     db_session.commit()
 
     padrao = client.get("/api/produtos")
-    assert len(padrao.json()) == 7
+    assert len(padrao.json()) == 16
 
     completo = client.get("/api/produtos", params={"incluir_indisponiveis": "true"})
-    assert len(completo.json()) == 8
+    assert len(completo.json()) == 17
 
 
 def test_get_produto_por_id(client: TestClient) -> None:
@@ -87,7 +89,7 @@ def test_criar_produto_valido(client: TestClient) -> None:
     assert corpo["disponivel"] is True
 
     listados = client.get("/api/produtos").json()
-    assert len(listados) == 9
+    assert len(listados) == 18
 
 
 def test_criar_produto_nome_duplicado_400(client: TestClient) -> None:
@@ -102,6 +104,63 @@ def test_criar_produto_nome_duplicado_400(client: TestClient) -> None:
 def test_criar_produto_preco_invalido_422(client: TestClient) -> None:
     resp = client.post("/api/produtos", json={**PRODUTO_NOVO, "preco": "0"})
     assert resp.status_code == 422
+
+
+def test_criar_produto_em_promocao_valido(client: TestClient) -> None:
+    resp = client.post(
+        "/api/produtos",
+        json={**PRODUTO_NOVO, "em_promocao": True, "preco_promocional": "17.90"},
+    )
+    assert resp.status_code == 201
+    corpo = resp.json()
+    assert corpo["em_promocao"] is True
+    assert corpo["preco_promocional"] == "17.90"
+
+
+def test_criar_produto_em_promocao_sem_preco_promocional_400(
+    client: TestClient,
+) -> None:
+    resp = client.post(
+        "/api/produtos", json={**PRODUTO_NOVO, "em_promocao": True}
+    )
+    assert resp.status_code == 400
+    assert "promocional" in resp.json()["detail"]
+
+
+def test_criar_produto_preco_promocional_maior_que_preco_400(
+    client: TestClient,
+) -> None:
+    resp = client.post(
+        "/api/produtos",
+        json={**PRODUTO_NOVO, "em_promocao": True, "preco_promocional": "99.00"},
+    )
+    assert resp.status_code == 400
+    assert "menor" in resp.json()["detail"]
+
+
+def test_produto_sem_promocao_nao_tem_preco_promocional(client: TestClient) -> None:
+    resp = client.post("/api/produtos", json=PRODUTO_NOVO)
+    corpo = resp.json()
+    assert corpo["em_promocao"] is False
+    assert corpo["preco_promocional"] is None
+
+
+def test_atualizar_produto_desmarcando_promocao_limpa_preco(
+    client: TestClient,
+) -> None:
+    criado = client.post(
+        "/api/produtos",
+        json={**PRODUTO_NOVO, "em_promocao": True, "preco_promocional": "17.90"},
+    ).json()
+
+    resp = client.put(
+        f"/api/produtos/{criado['id']}",
+        json={**PRODUTO_NOVO, "em_promocao": False},
+    )
+    assert resp.status_code == 200
+    corpo = resp.json()
+    assert corpo["em_promocao"] is False
+    assert corpo["preco_promocional"] is None
 
 
 def test_editar_produto(client: TestClient) -> None:
@@ -177,7 +236,7 @@ def test_editar_produto_mantendo_proprio_nome(client: TestClient) -> None:
     )
     assert resp.status_code == 200
     assert resp.json()["disponivel"] is False
-    assert len(client.get("/api/produtos").json()) == 7
+    assert len(client.get("/api/produtos").json()) == 16
 
 
 _PNG_1X1 = base64.b64decode(

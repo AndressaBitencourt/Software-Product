@@ -31,6 +31,8 @@ class ProdutoOut(BaseModel):
     categoria: str
     disponivel: bool
     imagem_url: str | None = None
+    em_promocao: bool
+    preco_promocional: Money | None = None
 
 
 class ProdutoIn(BaseModel):
@@ -39,6 +41,10 @@ class ProdutoIn(BaseModel):
     preco: Decimal = Field(gt=0, max_digits=10, decimal_places=2)
     categoria: str = Field(min_length=1, max_length=40)
     disponivel: bool = True
+    em_promocao: bool = False
+    preco_promocional: Decimal | None = Field(
+        default=None, gt=0, max_digits=10, decimal_places=2
+    )
 
     @field_validator("nome", "categoria", mode="after")
     @classmethod
