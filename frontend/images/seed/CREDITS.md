@@ -17,7 +17,6 @@ mantidos por transparência acadêmica, não por obrigação de licença.
 | `sundae-chocolate.jpg` | [Chocolate Ice Cream Sundae With Wafers](https://www.pexels.com/photo/chocolate-ice-cream-sundae-with-wafers-38371324/) | Jahra Tasfia Reza |
 | `torta-limao.jpg` | [Close-up of a Lemon Meringue Pie Slice](https://www.pexels.com/photo/17283922/) | Valeria Boltneva |
 | `petit-gateau.jpg` | [Decadent Chocolate Lava Cake Dessert Plate](https://www.pexels.com/photo/33674402/) | pedro furtado |
-| `casquinha-baunilha.jpg` | [Cream Ice Cream in Cone](https://www.pexels.com/photo/cream-ice-cream-in-cone-1294943/) | Somben Chea |
 | `brownie-sorvete.jpg` | [Close Up of Sweet Dessert](https://www.pexels.com/photo/close-up-of-sweet-dessert-9500626/) | Gustavo Peres |
 | `coca-cola-cherry.jpg` | [Cherry Flavored Coke Can with Droplets on Black Background](https://www.pexels.com/photo/cherry-flavored-coke-can-with-droplets-on-black-background-31966524/) | Christopher Welsch Leveroni |
 | `coca-cola-zero.jpg` | [Coca Cola Can on Black Surface](https://www.pexels.com/photo/coca-cola-can-on-black-surface-3819969/) | Olena Bohovyk |

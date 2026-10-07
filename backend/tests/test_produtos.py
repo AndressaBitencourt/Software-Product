@@ -8,16 +8,16 @@ from app import models, uploads
 from app.seed import CARDAPIO_INICIAL, seed_cardapio
 
 
-def test_seed_popula_dezessete_itens(db_session: Session) -> None:
+def test_seed_popula_dezesseis_itens(db_session: Session) -> None:
     inseridos = seed_cardapio(db_session)
-    assert inseridos == 17
-    assert db_session.query(models.Produto).count() == 17
+    assert inseridos == 16
+    assert db_session.query(models.Produto).count() == 16
 
 
 def test_seed_e_idempotente(db_session: Session) -> None:
-    assert seed_cardapio(db_session) == 17
+    assert seed_cardapio(db_session) == 16
     assert seed_cardapio(db_session) == 0
-    assert db_session.query(models.Produto).count() == 17
+    assert db_session.query(models.Produto).count() == 16
 
 
 def test_cardapio_inicial_tem_cinco_categorias(db_session: Session) -> None:
@@ -35,7 +35,7 @@ def test_get_produtos_retorna_seed(client: TestClient) -> None:
     resp = client.get("/api/produtos")
     assert resp.status_code == 200
     corpo = resp.json()
-    assert len(corpo) == 17
+    assert len(corpo) == 16
     primeiro = corpo[0]
     assert set(primeiro) == {
         "id", "nome", "descricao", "preco", "categoria", "disponivel",
@@ -53,10 +53,10 @@ def test_get_produtos_incluir_indisponiveis(client: TestClient, db_session) -> N
     db_session.commit()
 
     padrao = client.get("/api/produtos")
-    assert len(padrao.json()) == 16
+    assert len(padrao.json()) == 15
 
     completo = client.get("/api/produtos", params={"incluir_indisponiveis": "true"})
-    assert len(completo.json()) == 17
+    assert len(completo.json()) == 16
 
 
 def test_get_produto_por_id(client: TestClient) -> None:
@@ -89,7 +89,7 @@ def test_criar_produto_valido(client: TestClient) -> None:
     assert corpo["disponivel"] is True
 
     listados = client.get("/api/produtos").json()
-    assert len(listados) == 18
+    assert len(listados) == 17
 
 
 def test_criar_produto_nome_duplicado_400(client: TestClient) -> None:
@@ -236,7 +236,7 @@ def test_editar_produto_mantendo_proprio_nome(client: TestClient) -> None:
     )
     assert resp.status_code == 200
     assert resp.json()["disponivel"] is False
-    assert len(client.get("/api/produtos").json()) == 16
+    assert len(client.get("/api/produtos").json()) == 15
 
 
 _PNG_1X1 = base64.b64decode(
