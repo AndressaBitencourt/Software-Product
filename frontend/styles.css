@@ -80,21 +80,56 @@ main {
 }
 h2 { border-bottom: 2px solid var(--line); padding-bottom: 4px; font-size: 1.2rem; }
 
+.categoria-tabs {
+  display: flex;
+  gap: 4px;
+  overflow-x: auto;
+  margin: 10px 0 16px;
+  border-bottom: 1px solid var(--line);
+}
+.categoria-tab {
+  background: transparent;
+  color: var(--muted);
+  border: 0;
+  border-radius: 0;
+  padding: 8px 14px 10px;
+  font-weight: 600;
+  white-space: nowrap;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -1px;
+}
+.categoria-tab:hover { color: var(--ink); }
+.categoria-tab.ativa {
+  color: var(--ink);
+  border-bottom-color: var(--accent);
+}
+
 .cards {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 12px;
+  gap: 16px;
 }
 .card {
   background: var(--surface);
   border: 1px solid var(--line);
-  border-radius: 11px;
-  padding: 12px;
+  border-radius: 14px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 2px 8px rgba(43, 36, 32, 0.08);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.card:hover, .card:focus-within {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 16px rgba(43, 36, 32, 0.14);
+}
+.card-body {
+  padding: 10px 12px 12px;
   display: flex;
   flex-direction: column;
   gap: 6px;
-  box-shadow: 0 1px 0 var(--line);
 }
+.card-body strong { font-size: 1.05rem; }
 .card small { color: var(--muted); }
 .card .preco { font-weight: 700; color: var(--header); }
 .card button { margin-top: auto; }
@@ -167,7 +202,7 @@ th { background: #F6F0E2; font-family: "Fraunces", serif; font-weight: 600; }
   width: 100%;
   aspect-ratio: 4 / 3;
   object-fit: cover;
-  border-radius: 8px;
+  display: block;
   background: #F6F0E2;
 }
 .thumb {

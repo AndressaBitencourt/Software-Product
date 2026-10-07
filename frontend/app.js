@@ -4,6 +4,7 @@ const API = "/api";
 let cardapio = [];
 let carrinho = []; // [{ produto_id, nome, preco, quantidade }]
 let editandoId = null;
+let categoriaAtiva = "Todos";
 
 const $ = (sel) => document.querySelector(sel);
 
@@ -59,23 +60,55 @@ async function api(caminho, opcoes) {
   return corpo;
 }
 
-async function carregarCardapio() {
-  cardapio = await api("/produtos");
+function renderAbasCategoria() {
+  const categorias = ["Todos", ...new Set(cardapio.map((p) => p.categoria))].sort(
+    (a, b) => (a === "Todos" ? -1 : b === "Todos" ? 1 : a.localeCompare(b, "pt-BR"))
+  );
+  if (!categorias.includes(categoriaAtiva)) categoriaAtiva = "Todos";
+  const tabs = $("#categoria-tabs");
+  tabs.innerHTML = "";
+  for (const cat of categorias) {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "categoria-tab" + (cat === categoriaAtiva ? " ativa" : "");
+    btn.textContent = cat;
+    btn.addEventListener("click", () => {
+      categoriaAtiva = cat;
+      renderAbasCategoria();
+      renderCardapio();
+    });
+    tabs.appendChild(btn);
+  }
+}
+
+function renderCardapio() {
   const box = $("#cardapio");
   box.innerHTML = "";
-  for (const p of cardapio) {
+  const visiveis =
+    categoriaAtiva === "Todos"
+      ? cardapio
+      : cardapio.filter((p) => p.categoria === categoriaAtiva);
+  for (const p of visiveis) {
     const div = document.createElement("div");
     div.className = "card";
     div.innerHTML = `
       <img class="card-img" src="${esc(p.imagem_url || "/images/seed/placeholder.svg")}" alt="${esc(p.nome)}" />
-      <strong>${esc(p.nome)}</strong>
-      <small>${esc(p.categoria)}</small>
-      <span>${esc(p.descricao ?? "")}</span>
-      <span class="preco">${brl(p.preco)}</span>
-      <button type="button" data-id="${p.id}">Adicionar</button>`;
+      <div class="card-body">
+        <strong>${esc(p.nome)}</strong>
+        <small>${esc(p.categoria)}</small>
+        <span>${esc(p.descricao ?? "")}</span>
+        <span class="preco">${brl(p.preco)}</span>
+        <button type="button" data-id="${p.id}">Adicionar</button>
+      </div>`;
     div.querySelector("button").addEventListener("click", () => adicionar(p.id));
     box.appendChild(div);
   }
+}
+
+async function carregarCardapio() {
+  cardapio = await api("/produtos");
+  renderAbasCategoria();
+  renderCardapio();
 }
 
 function adicionar(produtoId) {
