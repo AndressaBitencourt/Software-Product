@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # ============================================================================
-#  Software-Product - Fase 1 (sistema de pedidos da hamburgueria)
-#  Sobe o app e abre o navegador.  Para rodar os 28 testes:  ./EXECUTE-AQUI.sh test
+#  Software-Product - sistema de pedidos da hamburgueria
+#  Sobe o app e abre o navegador.  Para rodar os testes:  ./EXECUTE-AQUI.sh test
 #  O script verifica o Python, instala o que faltar e explica cada passo.
 # ============================================================================
 set -uo pipefail
@@ -13,7 +13,7 @@ cd "$(dirname "$0")"
 ROOT="$(pwd)"
 
 echo "=================================================================="
-echo "  SOFTWARE-PRODUCT - Fase 1"
+echo "  SOFTWARE-PRODUCT"
 echo "  Pasta: $ROOT"
 echo "=================================================================="
 echo
@@ -130,7 +130,7 @@ echo
 
 # ----------------------------------------------------------- [5/5] rodar/testar
 if [ "${1:-}" = "test" ]; then
-  echo "[5/5] Rodando os 28 testes..."
+  echo "[5/5] Rodando os testes..."
   echo
   exec "$VENV_PY" -m pytest -v
 fi
