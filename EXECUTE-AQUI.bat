@@ -1,7 +1,7 @@
 @echo off
 REM ============================================================================
-REM  Software-Product - Fase 1 (sistema de pedidos da hamburgueria)
-REM  Sobe o app.  Para rodar os 28 testes em vez do servidor:  EXECUTE-AQUI.bat test
+REM  Software-Product - sistema de pedidos da hamburgueria
+REM  Sobe o app.  Para rodar os testes em vez do servidor:  EXECUTE-AQUI.bat test
 REM  O script verifica o Python, instala o que faltar e explica cada passo.
 REM ============================================================================
 setlocal enabledelayedexpansion
@@ -15,7 +15,7 @@ cd /d "%~dp0"
 set "ROOT=%CD%"
 
 echo ==================================================================
-echo   SOFTWARE-PRODUCT - Fase 1
+echo   SOFTWARE-PRODUCT
 echo   Pasta: %ROOT%
 echo ==================================================================
 echo.
@@ -81,7 +81,7 @@ echo.
 
 REM ------------------------------------------------------------ [5/5] rodar/testar
 if /I "%~1"=="test" (
-  echo [5/5] Rodando os 28 testes...
+  echo [5/5] Rodando os testes...
   echo.
   "%VENV_PY%" -m pytest -v
   echo.
