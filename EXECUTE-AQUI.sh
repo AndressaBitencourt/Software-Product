@@ -95,7 +95,9 @@ echo
 # servidor no ar nem abre o navegador apontando pra uma instancia velha.
 echo "[4/5] Checando a porta $PORT..."
 if command -v lsof >/dev/null 2>&1; then
-  PIDS="$(lsof -ti "tcp:$PORT" 2>/dev/null || true)"
+  # -sTCP:LISTEN e essencial: sem isso o lsof tambem lista o navegador (cliente
+  # conectado na porta), e a gente quase mata a aba do Chrome por engano.
+  PIDS="$(lsof -tiTCP:"$PORT" -sTCP:LISTEN 2>/dev/null || true)"
   if [ -n "$PIDS" ]; then
     FREED=""
     for pid in $PIDS; do
@@ -114,11 +116,11 @@ if command -v lsof >/dev/null 2>&1; then
     done
     if [ -n "$FREED" ]; then
       for _ in 1 2 3 4 5; do
-        lsof -ti "tcp:$PORT" >/dev/null 2>&1 || break
+        lsof -tiTCP:"$PORT" -sTCP:LISTEN >/dev/null 2>&1 || break
         sleep 1
       done
       # ainda vivo apos pedir gentilmente? forca o encerramento
-      REMAINING="$(lsof -ti "tcp:$PORT" 2>/dev/null || true)"
+      REMAINING="$(lsof -tiTCP:"$PORT" -sTCP:LISTEN 2>/dev/null || true)"
       [ -n "$REMAINING" ] && kill -9 $REMAINING 2>/dev/null || true
     fi
   fi
