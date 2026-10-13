@@ -76,14 +76,7 @@ echo.
 
 REM ------------------------------------------------------------------ [4/5] porta
 echo [4/5] Checando a porta %PORT%...
-netstat -ano | findstr ":%PORT%" | findstr /i "LISTENING" >nul
-if not errorlevel 1 (
-  echo       AVISO: ja existe um programa ouvindo na porta %PORT%.
-  echo              Se for uma execucao anterior deste app, feche-a antes,
-  echo              senao o navegador vai abrir a instancia antiga.
-) else (
-  echo       OK - porta livre
-)
+call :free_port
 echo.
 
 REM ------------------------------------------------------------ [5/5] rodar/testar
@@ -97,6 +90,11 @@ if /I "%~1"=="test" (
   exit /b 0
 )
 
+REM cache-buster: cada execucao abre uma URL diferente, entao o navegador
+REM nunca reaproveita HTML/CSS/JS antigos em cache de uma execucao anterior.
+set "CACHEBUST=%RANDOM%%RANDOM%"
+set "OPEN_URL=%URL%/?v=%CACHEBUST%"
+
 echo [5/5] Subindo o servidor...
 echo.
 echo ================================================================
@@ -105,7 +103,7 @@ echo   API:   %URL%/docs
 echo   Parar: feche esta janela ou aperte Ctrl+C
 echo ================================================================
 echo.
-start "" /b cmd /c "timeout /t 4 /nobreak >nul & start %URL%"
+call :open_browser
 "%VENV_PY%" -m uvicorn app.main:app --port %PORT%
 echo.
 echo ^(o servidor foi encerrado^)
@@ -143,6 +141,74 @@ for /d %%d in ("%LOCALAPPDATA%\Programs\Python\Python3*") do (
   if exist "%%d\python.exe" set "PATH=%%d;%%d\Scripts;!PATH!"
 )
 if exist "%LOCALAPPDATA%\Programs\Python\Launcher\py.exe" set "PATH=%LOCALAPPDATA%\Programs\Python\Launcher;!PATH!"
+goto :eof
+
+REM Mata quem estiver ouvindo em %PORT% (so se for um processo python.exe -
+REM ou seja, uma execucao anterior deste mesmo app) e espera a porta liberar.
+REM Assim, rodar o EXECUTE-AQUI.bat duas vezes nunca deixa duas instancias
+REM do servidor no ar nem abre o navegador apontando pra uma instancia velha.
+:free_port
+set "FREED="
+set "BLOCKED_BY_OUTRO="
+for /f "tokens=5" %%p in ('netstat -ano ^| findstr /r /c:":%PORT% .*LISTENING"') do (
+  set "PID=%%p"
+  set "PNAME="
+  for /f "tokens=1" %%n in ('tasklist /fi "PID eq !PID!" /nh 2^>nul') do set "PNAME=%%n"
+  echo !PNAME! | findstr /i "python" >nul
+  if not errorlevel 1 (
+    echo       Encerrando uma execucao anterior deste app ^(PID !PID!^)...
+    taskkill /F /PID !PID! >nul 2>&1
+    set "FREED=1"
+  ) else if defined PNAME (
+    echo       AVISO: a porta %PORT% esta em uso por "!PNAME!" ^(PID !PID!^), que nao parece ser este app.
+    echo              Feche esse programa manualmente se a porta continuar ocupada.
+    set "BLOCKED_BY_OUTRO=1"
+  )
+)
+if defined FREED (
+  REM espera o Windows liberar a porta de verdade (ate ~5s)
+  for /l %%i in (1,1,5) do (
+    netstat -ano | findstr /r /c:":%PORT% .*LISTENING" >nul
+    if errorlevel 1 ( goto :free_port_done )
+    timeout /t 1 /nobreak >nul
+  )
+)
+:free_port_done
+if defined BLOCKED_BY_OUTRO ( echo       (seguindo mesmo assim - pode falhar ao subir^) ) else ( echo       OK - porta livre )
+goto :eof
+
+REM Abre o navegador numa janela anonima/privada (quando acha Edge ou Chrome
+REM instalado), pra nunca servir HTML/CSS/JS antigos do cache do navegador.
+REM Se nao achar nenhum dos dois, cai pro navegador padrao mesmo assim -
+REM a URL com cache-buster ja evita a maior parte do problema.
+:open_browser
+set "BROWSER_EXE="
+set "BROWSER_FLAG="
+if exist "%ProgramFiles(x86)%\Microsoft\Edge\Application\msedge.exe" (
+  set "BROWSER_EXE=%ProgramFiles(x86)%\Microsoft\Edge\Application\msedge.exe"
+  set "BROWSER_FLAG=--inprivate"
+)
+if not defined BROWSER_EXE if exist "%ProgramFiles%\Microsoft\Edge\Application\msedge.exe" (
+  set "BROWSER_EXE=%ProgramFiles%\Microsoft\Edge\Application\msedge.exe"
+  set "BROWSER_FLAG=--inprivate"
+)
+if not defined BROWSER_EXE if exist "%ProgramFiles%\Google\Chrome\Application\chrome.exe" (
+  set "BROWSER_EXE=%ProgramFiles%\Google\Chrome\Application\chrome.exe"
+  set "BROWSER_FLAG=--incognito"
+)
+if not defined BROWSER_EXE if exist "%ProgramFiles(x86)%\Google\Chrome\Application\chrome.exe" (
+  set "BROWSER_EXE=%ProgramFiles(x86)%\Google\Chrome\Application\chrome.exe"
+  set "BROWSER_FLAG=--incognito"
+)
+if not defined BROWSER_EXE if exist "%LocalAppData%\Google\Chrome\Application\chrome.exe" (
+  set "BROWSER_EXE=%LocalAppData%\Google\Chrome\Application\chrome.exe"
+  set "BROWSER_FLAG=--incognito"
+)
+if defined BROWSER_EXE (
+  start "" /b cmd /c "timeout /t 4 /nobreak >nul & "!BROWSER_EXE!" !BROWSER_FLAG! !OPEN_URL!"
+) else (
+  start "" /b cmd /c "timeout /t 4 /nobreak >nul & start !OPEN_URL!"
+)
 goto :eof
 
 :fail

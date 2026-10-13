@@ -89,14 +89,41 @@ echo "      OK"
 echo
 
 # -------------------------------------------------------------------- [4/5] porta
+# Mata quem estiver ouvindo em $PORT - mas so se for um processo Python (ou
+# seja, uma execucao anterior deste mesmo app) - e espera a porta liberar.
+# Assim, rodar o EXECUTE-AQUI.sh duas vezes nunca deixa duas instancias do
+# servidor no ar nem abre o navegador apontando pra uma instancia velha.
 echo "[4/5] Checando a porta $PORT..."
-if command -v lsof >/dev/null 2>&1 && lsof -ti "tcp:$PORT" >/dev/null 2>&1; then
-  echo "      AVISO: ja tem algo ouvindo na porta $PORT."
-  echo "             Se for uma execucao anterior deste app, encerre com:"
-  echo "             lsof -ti tcp:$PORT | xargs kill"
-else
-  echo "      OK - porta livre"
+if command -v lsof >/dev/null 2>&1; then
+  PIDS="$(lsof -ti "tcp:$PORT" 2>/dev/null || true)"
+  if [ -n "$PIDS" ]; then
+    FREED=""
+    for pid in $PIDS; do
+      PNAME="$(ps -p "$pid" -o comm= 2>/dev/null || true)"
+      case "$PNAME" in
+        *[Pp]ython*|*uvicorn*)
+          echo "      Encerrando uma execucao anterior deste app (PID $pid)..."
+          kill "$pid" 2>/dev/null || true
+          FREED=1
+          ;;
+        *)
+          echo "      AVISO: a porta $PORT esta em uso por \"$PNAME\" (PID $pid), que nao parece ser este app."
+          echo "             Feche esse programa manualmente se a porta continuar ocupada."
+          ;;
+      esac
+    done
+    if [ -n "$FREED" ]; then
+      for _ in 1 2 3 4 5; do
+        lsof -ti "tcp:$PORT" >/dev/null 2>&1 || break
+        sleep 1
+      done
+      # ainda vivo apos pedir gentilmente? forca o encerramento
+      REMAINING="$(lsof -ti "tcp:$PORT" 2>/dev/null || true)"
+      [ -n "$REMAINING" ] && kill -9 $REMAINING 2>/dev/null || true
+    fi
+  fi
 fi
+echo "      OK"
 echo
 
 # ----------------------------------------------------------- [5/5] rodar/testar
@@ -105,6 +132,10 @@ if [ "${1:-}" = "test" ]; then
   echo
   exec "$VENV_PY" -m pytest -v
 fi
+
+# cache-buster: cada execucao abre uma URL diferente, entao o navegador nunca
+# reaproveita HTML/CSS/JS antigos em cache de uma execucao anterior.
+OPEN_URL="$URL/?v=$(date +%s)"
 
 echo "[5/5] Subindo o servidor..."
 echo
@@ -115,11 +146,20 @@ echo "  Parar: Ctrl+C"
 echo "================================================================"
 echo
 
-# abre o navegador ~3s depois (tempo do servidor subir)
+# abre o navegador ~3s depois (tempo do servidor subir), de preferencia numa
+# janela anonima/privada (sem usar o cache do navegador de todo)
 (
   sleep 3
-  if command -v open >/dev/null 2>&1; then open "$URL"
-  elif command -v xdg-open >/dev/null 2>&1; then xdg-open "$URL"
+  if [ "$(uname)" = "Darwin" ] && [ -d "/Applications/Google Chrome.app" ]; then
+    open -na "Google Chrome" --args --incognito "$OPEN_URL"
+  elif command -v google-chrome >/dev/null 2>&1; then
+    google-chrome --incognito "$OPEN_URL" >/dev/null 2>&1 &
+  elif command -v chromium >/dev/null 2>&1; then
+    chromium --incognito "$OPEN_URL" >/dev/null 2>&1 &
+  elif command -v open >/dev/null 2>&1; then
+    open "$OPEN_URL"
+  elif command -v xdg-open >/dev/null 2>&1; then
+    xdg-open "$OPEN_URL"
   fi
 ) >/dev/null 2>&1 &
 
