@@ -22,6 +22,10 @@ fotos, categorias e promoções, numa página própria.
 > Alembic), então um banco antigo quebra com
 > `no such column`.
 
+> **Login padrão (Fase 3):** e-mail `admin@hamburgueria.com`, senha
+> `admin123` — criado automaticamente na primeira execução. É só uma
+> credencial de demonstração para a entrega da faculdade.
+
 ### Opção mais fácil — script pronto
 
 Fiz um script que acha o Python (instala sozinho se faltar), cria o ambiente

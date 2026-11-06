@@ -63,3 +63,29 @@ class ItemPedido(Base):
     preco_unitario: Mapped[Decimal] = mapped_column(Numeric(10, 2))
 
     pedido: Mapped["Pedido"] = relationship(back_populates="itens")
+
+
+class Usuario(Base):
+    __tablename__ = "usuario"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    nome: Mapped[str] = mapped_column(String(80))
+    email: Mapped[str] = mapped_column(String(120), unique=True)
+    senha_hash: Mapped[str] = mapped_column(String(255))
+    papel: Mapped[str] = mapped_column(String(20))
+    criado_em: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=utcnow
+    )
+
+
+class Sessao(Base):
+    __tablename__ = "sessao"
+
+    token: Mapped[str] = mapped_column(String(64), primary_key=True)
+    usuario_id: Mapped[int] = mapped_column(
+        ForeignKey("usuario.id", ondelete="CASCADE")
+    )
+    criado_em: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=utcnow
+    )
+    expira_em: Mapped[datetime] = mapped_column(DateTime(timezone=True))

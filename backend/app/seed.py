@@ -1,5 +1,6 @@
 from decimal import Decimal
 
+import bcrypt
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
@@ -67,3 +68,25 @@ def seed_cardapio(db: Session) -> int:
     db.add_all(models.Produto(**item) for item in CARDAPIO_INICIAL)
     db.commit()
     return len(CARDAPIO_INICIAL)
+
+
+ADMIN_PADRAO_EMAIL = "admin@hamburgueria.com"
+ADMIN_PADRAO_SENHA = "admin123"  # credencial de demonstracao, ver README
+
+
+def seed_usuarios(db: Session) -> int:
+    ja_existem = db.scalar(select(func.count()).select_from(models.Usuario))
+    if ja_existem:
+        return 0
+    senha_hash = bcrypt.hashpw(
+        ADMIN_PADRAO_SENHA.encode(), bcrypt.gensalt()
+    ).decode()
+    admin = models.Usuario(
+        nome="Administrador",
+        email=ADMIN_PADRAO_EMAIL,
+        senha_hash=senha_hash,
+        papel="admin",
+    )
+    db.add(admin)
+    db.commit()
+    return 1
