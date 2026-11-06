@@ -93,3 +93,17 @@ class PedidoResumo(BaseModel):
     quantidade_itens: int
     total: Money
     criado_em: UtcDatetime
+
+
+class LoginIn(BaseModel):
+    email: str = Field(min_length=1, max_length=120)
+    senha: str = Field(min_length=1)
+
+
+class UsuarioOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    nome: str
+    email: str
+    papel: str
