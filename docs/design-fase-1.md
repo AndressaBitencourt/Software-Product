@@ -24,11 +24,18 @@ mesmo ciclo: design → plano → implementação → verificação.
 > Histórico: eu tinha planejado o projeto em 5 fases; a faculdade depois pediu
 > 3. Condensei as 4 funcionalidades que restavam nas Fases 2 e 3 (decisão de
 > 2026-09-08).
+>
+> Histórico: reduzi o escopo da Fase 2 — ela incluía também o fluxo de status
+> do pedido (ciclo Recebido → Em preparo → Pronto → Entregue / Cancelado,
+> conta detalhada, tela de cozinha), que não cheguei a construir. Decidi
+> fechar a Fase 2 só com a Gestão de Cardápio (que ganhou bem mais escopo do
+> que o previsto aqui — visual novo, fotos de produto, promoções, carrossel
+> de ofertas) e seguir direto para a Fase 3 (decisão de 2026-11-06).
 
 | Fase | Funcionalidade | Escopo resumido |
 |---|---|---|
 | **1** | CRUD completo de Pedidos | Cardápio fixo (seed). Criar, listar, ver, editar e excluir pedidos. Tela web única. |
-| 2 | Gestão de Cardápio **+** Fluxo do pedido | CRUD de hambúrgueres (nome, preço, categoria, disponibilidade) — o formulário de pedido passa a puxar do cardápio real. **E** ciclo de status (Recebido → Em preparo → Pronto → Entregue / Cancelado), conta detalhada, tela de cozinha por status. |
+| **2** | Gestão de Cardápio | CRUD de produtos (nome, preço, categoria, disponibilidade, foto, promoção) — o formulário de pedido passa a puxar do cardápio real. ~~Fluxo de status do pedido~~ (cortado — ver histórico acima). |
 | 3 | Login e perfis **+** Relatórios / dashboard | Autenticação com papéis cliente e atendente/admin, rotas protegidas. **E** faturamento por dia, itens mais vendidos, total de pedidos, busca, filtros e gráficos simples. |
 
 Este documento cobre **apenas a Fase 1**.
