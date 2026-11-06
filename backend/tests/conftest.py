@@ -39,9 +39,10 @@ def db_session() -> Iterator[Session]:
 @pytest.fixture
 def client(db_session: Session) -> Iterator[TestClient]:
     app = create_app(inicializar=False)
-    from app.seed import seed_cardapio
+    from app.seed import seed_cardapio, seed_usuarios
 
     seed_cardapio(db_session)
+    seed_usuarios(db_session)
 
     def _override_get_db() -> Iterator[Session]:
         yield db_session

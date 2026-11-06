@@ -15,11 +15,12 @@ FRONTEND_DIR = Path(os.environ.get("FRONTEND_DIR", str(_DEFAULT_FRONTEND)))
 def inicializar_banco() -> None:
     """Cria as tabelas e popula o cardápio. Só roda no startup do servidor real."""
     Base.metadata.create_all(engine)
-    from app.seed import seed_cardapio
+    from app.seed import seed_cardapio, seed_usuarios
 
     db = SessionLocal()
     try:
         seed_cardapio(db)
+        seed_usuarios(db)
     finally:
         db.close()
 
