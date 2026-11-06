@@ -1,3 +1,4 @@
+from datetime import date, datetime
 from decimal import Decimal
 
 from sqlalchemy import func, select
@@ -151,10 +152,21 @@ def criar_pedido(db: Session, dados: schemas.PedidoIn) -> models.Pedido:
     return pedido
 
 
-def listar_pedidos(db: Session) -> list[models.Pedido]:
+def listar_pedidos(
+    db: Session,
+    cliente_nome: str | None = None,
+    data_inicio: datetime | None = None,
+    data_fim: datetime | None = None,
+) -> list[models.Pedido]:
     stmt = select(models.Pedido).order_by(
         models.Pedido.criado_em.desc(), models.Pedido.id.desc()
     )
+    if cliente_nome:
+        stmt = stmt.where(models.Pedido.cliente_nome.ilike(f"%{cliente_nome}%"))
+    if data_inicio:
+        stmt = stmt.where(models.Pedido.criado_em >= data_inicio)
+    if data_fim:
+        stmt = stmt.where(models.Pedido.criado_em <= data_fim)
     return list(db.scalars(stmt))
 
 
@@ -206,3 +218,54 @@ def excluir_produto(db: Session, produto_id: int) -> bool:
     db.delete(produto)
     db.commit()
     return True
+
+
+def _item_subtotal(item: models.ItemPedido) -> Decimal:
+    return Decimal(item.preco_unitario) * item.quantidade
+
+
+def resumo_relatorio(
+    db: Session, data_inicio: datetime, data_fim: datetime
+) -> tuple[int, Decimal, Decimal]:
+    pedidos = listar_pedidos(db, data_inicio=data_inicio, data_fim=data_fim)
+    total_pedidos = len(pedidos)
+    faturamento_total = sum(
+        (_item_subtotal(item) for pedido in pedidos for item in pedido.itens),
+        Decimal("0"),
+    )
+    ticket_medio = (
+        faturamento_total / total_pedidos if total_pedidos else Decimal("0")
+    )
+    return total_pedidos, faturamento_total, ticket_medio
+
+
+def faturamento_diario(
+    db: Session, data_inicio: datetime, data_fim: datetime
+) -> list[tuple[date, Decimal]]:
+    pedidos = listar_pedidos(db, data_inicio=data_inicio, data_fim=data_fim)
+    totais_por_dia: dict[date, Decimal] = {}
+    for pedido in pedidos:
+        dia = pedido.criado_em.date()
+        subtotal_pedido = sum(
+            (_item_subtotal(item) for item in pedido.itens), Decimal("0")
+        )
+        totais_por_dia[dia] = totais_por_dia.get(dia, Decimal("0")) + subtotal_pedido
+    return sorted(totais_por_dia.items())
+
+
+def produtos_mais_vendidos(
+    db: Session, data_inicio: datetime, data_fim: datetime, limite: int
+) -> list[tuple[str, int]]:
+    stmt = (
+        select(
+            models.ItemPedido.produto_nome,
+            func.sum(models.ItemPedido.quantidade).label("total"),
+        )
+        .join(models.Pedido, models.Pedido.id == models.ItemPedido.pedido_id)
+        .where(models.Pedido.criado_em >= data_inicio)
+        .where(models.Pedido.criado_em <= data_fim)
+        .group_by(models.ItemPedido.produto_nome)
+        .order_by(func.sum(models.ItemPedido.quantidade).desc())
+        .limit(limite)
+    )
+    return list(db.execute(stmt).all())

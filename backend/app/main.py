@@ -54,6 +54,10 @@ def create_app(inicializar: bool = True) -> FastAPI:
 
     app.include_router(pedidos.router)
 
+    from app.routers import relatorios
+
+    app.include_router(relatorios.router)
+
     app.mount("/uploads", StaticFiles(directory=uploads.UPLOADS_ROOT), name="uploads")
 
     if FRONTEND_DIR.is_dir():
