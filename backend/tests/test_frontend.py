@@ -43,3 +43,10 @@ def test_cardapio_admin_tem_campos_de_promocao(client: TestClient) -> None:
 def test_index_tem_carrossel_de_ofertas(client: TestClient) -> None:
     resp = client.get("/")
     assert 'id="carrossel-ofertas"' in resp.text
+
+
+def test_login_serve_a_pagina(client: TestClient) -> None:
+    resp = client.get("/login.html")
+    assert resp.status_code == 200
+    assert "Entrar" in resp.text
+    assert "login.js" in resp.text

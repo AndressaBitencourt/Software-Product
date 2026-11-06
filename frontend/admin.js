@@ -42,6 +42,32 @@ function initMenu() {
   });
 }
 
+async function verificarSessao(papelExigido) {
+  const resp = await fetch(`${API}/me`);
+  if (resp.status === 401) {
+    window.location.href = "/login.html";
+    return null;
+  }
+  const usuario = await resp.json();
+  if (papelExigido && usuario.papel !== papelExigido) {
+    window.location.href = "/";
+    return null;
+  }
+  return usuario;
+}
+
+function aplicarUsuarioNoMenu(usuario) {
+  $("#usuario-nome").textContent = usuario.nome;
+  const linkCardapio = $("#link-cardapio");
+  const linkRelatorios = $("#link-relatorios");
+  if (linkCardapio) linkCardapio.hidden = usuario.papel !== "admin";
+  if (linkRelatorios) linkRelatorios.hidden = usuario.papel !== "admin";
+  $("#btn-sair").addEventListener("click", async () => {
+    await fetch(`${API}/logout`, { method: "POST" });
+    window.location.href = "/login.html";
+  });
+}
+
 async function api(caminho, opcoes) {
   const resp = await fetch(API + caminho, {
     headers: { "Content-Type": "application/json" },
@@ -236,6 +262,9 @@ $("#imagem").addEventListener("change", (e) => {
 initMenu();
 
 (async function iniciar() {
+  const usuario = await verificarSessao("admin");
+  if (!usuario) return;
+  aplicarUsuarioNoMenu(usuario);
   try {
     await carregarProdutos();
   } catch (e) {
