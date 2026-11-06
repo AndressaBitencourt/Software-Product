@@ -2,8 +2,8 @@
 
 Este é o meu trabalho de faculdade, entregue em 3 fases. Na **Fase 1** eu fiz o
 CRUD completo de pedidos, com front-end, back-end e banco de dados. Na **Fase
-2a** acrescentei a gestão de cardápio — criar, editar e excluir produtos,
-numa página própria.
+2** acrescentei a gestão de cardápio — criar, editar e excluir produtos, com
+fotos, categorias e promoções, numa página própria.
 
 ## Tecnologias que usei
 
@@ -91,8 +91,13 @@ pytest -v
 
 ## Roadmap
 
-| Fase | O que entra |
-|---|---|
-| 1 | CRUD de pedidos (esta entrega) |
-| 2 | Gestão de cardápio (CRUD de produtos) + fluxo de status do pedido (Recebido → Preparo → Pronto → Entregue/Cancelado) + conta detalhada + tela de cozinha |
-| 3 | Login e perfis (cliente / atendente / admin) + relatórios e dashboard |
+| Fase | O que entra | Status |
+| --- | --- | --- |
+| 1 | CRUD de pedidos | ✅ Feito |
+| 2 | Gestão de cardápio (CRUD de produtos, fotos, promoções) | ✅ Feito (escopo reduzido — ver nota abaixo) |
+| 3 | Login e perfis (cliente / atendente / admin) + relatórios e dashboard | 🔜 Próxima entrega |
+
+> A Fase 2 originalmente incluía também o fluxo de status do pedido
+> (Recebido → Preparo → Pronto → Entregue/Cancelado), conta detalhada e tela
+> de cozinha. Decidi cortar essa parte e fechar a fase só com a gestão de
+> cardápio — ver `docs/design-fase-1.md` para o histórico da decisão.
