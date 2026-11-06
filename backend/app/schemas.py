@@ -107,3 +107,19 @@ class UsuarioOut(BaseModel):
     nome: str
     email: str
     papel: str
+
+
+class ResumoRelatorio(BaseModel):
+    total_pedidos: int
+    faturamento_total: Money
+    ticket_medio: Money
+
+
+class FaturamentoDiarioItem(BaseModel):
+    data: str
+    total: Money
+
+
+class ProdutoMaisVendidoItem(BaseModel):
+    produto_nome: str
+    quantidade_total: int

@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
@@ -24,12 +26,14 @@ def criar(
 
 @router.get("", response_model=list[schemas.PedidoResumo])
 def listar(
+    cliente_nome: str | None = None,
+    data_inicio: datetime | None = None,
+    data_fim: datetime | None = None,
     db: Session = Depends(get_db),
     _usuario: models.Usuario = Depends(auth.usuario_logado),
 ):
-    return [
-        serializers.pedido_para_resumo(p) for p in crud.listar_pedidos(db)
-    ]
+    pedidos = crud.listar_pedidos(db, cliente_nome, data_inicio, data_fim)
+    return [serializers.pedido_para_resumo(p) for p in pedidos]
 
 
 @router.get("/{pedido_id}", response_model=schemas.PedidoOut)
