@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
-from app import crud, schemas, serializers
+from app import auth, crud, models, schemas, serializers
 from app.database import get_db
 
 router = APIRouter(prefix="/api/pedidos", tags=["pedidos"])
@@ -10,7 +10,11 @@ router = APIRouter(prefix="/api/pedidos", tags=["pedidos"])
 @router.post(
     "", response_model=schemas.PedidoOut, status_code=status.HTTP_201_CREATED
 )
-def criar(dados: schemas.PedidoIn, db: Session = Depends(get_db)):
+def criar(
+    dados: schemas.PedidoIn,
+    db: Session = Depends(get_db),
+    _usuario: models.Usuario = Depends(auth.usuario_logado),
+):
     try:
         pedido = crud.criar_pedido(db, dados)
     except crud.RegraNegocioError as erro:
@@ -19,14 +23,21 @@ def criar(dados: schemas.PedidoIn, db: Session = Depends(get_db)):
 
 
 @router.get("", response_model=list[schemas.PedidoResumo])
-def listar(db: Session = Depends(get_db)):
+def listar(
+    db: Session = Depends(get_db),
+    _usuario: models.Usuario = Depends(auth.usuario_logado),
+):
     return [
         serializers.pedido_para_resumo(p) for p in crud.listar_pedidos(db)
     ]
 
 
 @router.get("/{pedido_id}", response_model=schemas.PedidoOut)
-def detalhar(pedido_id: int, db: Session = Depends(get_db)):
+def detalhar(
+    pedido_id: int,
+    db: Session = Depends(get_db),
+    _usuario: models.Usuario = Depends(auth.usuario_logado),
+):
     pedido = crud.obter_pedido(db, pedido_id)
     if pedido is None:
         raise HTTPException(status_code=404, detail="Pedido não encontrado.")
@@ -35,7 +46,10 @@ def detalhar(pedido_id: int, db: Session = Depends(get_db)):
 
 @router.put("/{pedido_id}", response_model=schemas.PedidoOut)
 def atualizar(
-    pedido_id: int, dados: schemas.PedidoIn, db: Session = Depends(get_db)
+    pedido_id: int,
+    dados: schemas.PedidoIn,
+    db: Session = Depends(get_db),
+    _usuario: models.Usuario = Depends(auth.usuario_logado),
 ):
     try:
         pedido = crud.atualizar_pedido(db, pedido_id, dados)
@@ -47,6 +61,10 @@ def atualizar(
 
 
 @router.delete("/{pedido_id}", status_code=status.HTTP_204_NO_CONTENT)
-def excluir(pedido_id: int, db: Session = Depends(get_db)):
+def excluir(
+    pedido_id: int,
+    db: Session = Depends(get_db),
+    _usuario: models.Usuario = Depends(auth.usuario_logado),
+):
     if not crud.excluir_pedido(db, pedido_id):
         raise HTTPException(status_code=404, detail="Pedido não encontrado.")

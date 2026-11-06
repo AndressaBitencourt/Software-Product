@@ -10,8 +10,8 @@ PEDIDO_VALIDO = {
 }
 
 
-def test_criar_pedido_valido(client: TestClient) -> None:
-    resp = client.post("/api/pedidos", json=PEDIDO_VALIDO)
+def test_criar_pedido_valido(client_atendente: TestClient) -> None:
+    resp = client_atendente.post("/api/pedidos", json=PEDIDO_VALIDO)
     assert resp.status_code == 201
     corpo = resp.json()
     assert corpo["cliente_nome"] == "Maria"
@@ -24,16 +24,16 @@ def test_criar_pedido_valido(client: TestClient) -> None:
     assert item["subtotal"] == "36.00"
 
 
-def test_criar_pedido_sem_itens_400(client: TestClient) -> None:
-    resp = client.post(
+def test_criar_pedido_sem_itens_400(client_atendente: TestClient) -> None:
+    resp = client_atendente.post(
         "/api/pedidos", json={"cliente_nome": "Ana", "itens": []}
     )
     assert resp.status_code == 400
     assert "pelo menos um item" in resp.json()["detail"]
 
 
-def test_criar_pedido_produto_inexistente_400(client: TestClient) -> None:
-    resp = client.post(
+def test_criar_pedido_produto_inexistente_400(client_atendente: TestClient) -> None:
+    resp = client_atendente.post(
         "/api/pedidos",
         json={"cliente_nome": "Ana", "itens": [{"produto_id": 999, "quantidade": 1}]},
     )
@@ -41,29 +41,29 @@ def test_criar_pedido_produto_inexistente_400(client: TestClient) -> None:
     assert "999" in resp.json()["detail"]
 
 
-def test_criar_pedido_quantidade_zero_422(client: TestClient) -> None:
-    resp = client.post(
+def test_criar_pedido_quantidade_zero_422(client_atendente: TestClient) -> None:
+    resp = client_atendente.post(
         "/api/pedidos",
         json={"cliente_nome": "Ana", "itens": [{"produto_id": 1, "quantidade": 0}]},
     )
     assert resp.status_code == 422
 
 
-def test_criar_pedido_sem_cliente_422(client: TestClient) -> None:
-    resp = client.post(
+def test_criar_pedido_sem_cliente_422(client_atendente: TestClient) -> None:
+    resp = client_atendente.post(
         "/api/pedidos",
         json={"itens": [{"produto_id": 1, "quantidade": 1}]},
     )
     assert resp.status_code == 422
 
 
-def test_criar_pedido_produto_indisponivel_400(client: TestClient, db_session) -> None:
+def test_criar_pedido_produto_indisponivel_400(client_atendente: TestClient, db_session) -> None:
     from app import models
 
     db_session.get(models.Produto, 1).disponivel = False
     db_session.commit()
 
-    resp = client.post(
+    resp = client_atendente.post(
         "/api/pedidos",
         json={"cliente_nome": "Ana", "itens": [{"produto_id": 1, "quantidade": 1}]},
     )
@@ -71,14 +71,14 @@ def test_criar_pedido_produto_indisponivel_400(client: TestClient, db_session) -
     assert "indisponível" in resp.json()["detail"]
 
 
-def test_listar_pedidos(client: TestClient) -> None:
-    client.post("/api/pedidos", json=PEDIDO_VALIDO)
-    client.post(
+def test_listar_pedidos(client_atendente: TestClient) -> None:
+    client_atendente.post("/api/pedidos", json=PEDIDO_VALIDO)
+    client_atendente.post(
         "/api/pedidos",
         json={"cliente_nome": "João", "itens": [{"produto_id": 2, "quantidade": 1}]},
     )
 
-    resp = client.get("/api/pedidos")
+    resp = client_atendente.get("/api/pedidos")
     assert resp.status_code == 200
     corpo = resp.json()
     assert len(corpo) == 2
@@ -92,10 +92,10 @@ def test_listar_pedidos(client: TestClient) -> None:
     assert primeiro["total"] == "22.00"
 
 
-def test_detalhar_pedido(client: TestClient) -> None:
-    criado = client.post("/api/pedidos", json=PEDIDO_VALIDO).json()
+def test_detalhar_pedido(client_atendente: TestClient) -> None:
+    criado = client_atendente.post("/api/pedidos", json=PEDIDO_VALIDO).json()
 
-    resp = client.get(f"/api/pedidos/{criado['id']}")
+    resp = client_atendente.get(f"/api/pedidos/{criado['id']}")
     assert resp.status_code == 200
     corpo = resp.json()
     assert corpo["id"] == criado["id"]
@@ -103,21 +103,21 @@ def test_detalhar_pedido(client: TestClient) -> None:
     assert len(corpo["itens"]) == 2
 
 
-def test_detalhar_pedido_inexistente_404(client: TestClient) -> None:
-    resp = client.get("/api/pedidos/999")
+def test_detalhar_pedido_inexistente_404(client_atendente: TestClient) -> None:
+    resp = client_atendente.get("/api/pedidos/999")
     assert resp.status_code == 404
     assert resp.json()["detail"] == "Pedido não encontrado."
 
 
-def test_editar_pedido_recalcula_total(client: TestClient) -> None:
-    criado = client.post("/api/pedidos", json=PEDIDO_VALIDO).json()
+def test_editar_pedido_recalcula_total(client_atendente: TestClient) -> None:
+    criado = client_atendente.post("/api/pedidos", json=PEDIDO_VALIDO).json()
 
     novo_corpo = {
         "cliente_nome": "Maria Clara",
         "observacao": None,
         "itens": [{"produto_id": 3, "quantidade": 2}],  # X-Tudo 28.00
     }
-    resp = client.put(f"/api/pedidos/{criado['id']}", json=novo_corpo)
+    resp = client_atendente.put(f"/api/pedidos/{criado['id']}", json=novo_corpo)
     assert resp.status_code == 200
     corpo = resp.json()
     assert corpo["cliente_nome"] == "Maria Clara"
@@ -126,79 +126,79 @@ def test_editar_pedido_recalcula_total(client: TestClient) -> None:
     assert corpo["atualizado_em"] >= corpo["criado_em"]
 
 
-def test_editar_pedido_inexistente_404(client: TestClient) -> None:
-    resp = client.put(
+def test_editar_pedido_inexistente_404(client_atendente: TestClient) -> None:
+    resp = client_atendente.put(
         "/api/pedidos/999",
         json={"cliente_nome": "X", "itens": [{"produto_id": 1, "quantidade": 1}]},
     )
     assert resp.status_code == 404
 
 
-def test_editar_pedido_sem_itens_400(client: TestClient) -> None:
-    criado = client.post("/api/pedidos", json=PEDIDO_VALIDO).json()
-    resp = client.put(
+def test_editar_pedido_sem_itens_400(client_atendente: TestClient) -> None:
+    criado = client_atendente.post("/api/pedidos", json=PEDIDO_VALIDO).json()
+    resp = client_atendente.put(
         f"/api/pedidos/{criado['id']}",
         json={"cliente_nome": "Maria", "itens": []},
     )
     assert resp.status_code == 400
 
 
-def test_excluir_pedido(client: TestClient) -> None:
-    criado = client.post("/api/pedidos", json=PEDIDO_VALIDO).json()
+def test_excluir_pedido(client_atendente: TestClient) -> None:
+    criado = client_atendente.post("/api/pedidos", json=PEDIDO_VALIDO).json()
 
-    resp = client.delete(f"/api/pedidos/{criado['id']}")
+    resp = client_atendente.delete(f"/api/pedidos/{criado['id']}")
     assert resp.status_code == 204
     assert resp.content == b""
 
-    assert client.get(f"/api/pedidos/{criado['id']}").status_code == 404
-    assert client.get("/api/pedidos").json() == []
+    assert client_atendente.get(f"/api/pedidos/{criado['id']}").status_code == 404
+    assert client_atendente.get("/api/pedidos").json() == []
 
 
 def test_excluir_pedido_remove_itens_em_cascata(
-    client: TestClient, db_session
+    client_atendente: TestClient, db_session
 ) -> None:
     from app import models
 
-    criado = client.post("/api/pedidos", json=PEDIDO_VALIDO).json()
+    criado = client_atendente.post("/api/pedidos", json=PEDIDO_VALIDO).json()
     assert db_session.query(models.ItemPedido).count() == 2
 
-    client.delete(f"/api/pedidos/{criado['id']}")
+    client_atendente.delete(f"/api/pedidos/{criado['id']}")
     assert db_session.query(models.ItemPedido).count() == 0
 
 
-def test_excluir_pedido_inexistente_404(client: TestClient) -> None:
-    resp = client.delete("/api/pedidos/999")
+def test_excluir_pedido_inexistente_404(client_atendente: TestClient) -> None:
+    resp = client_atendente.delete("/api/pedidos/999")
     assert resp.status_code == 404
 
 
-def test_timestamps_saem_em_utc_com_z(client: TestClient) -> None:
-    corpo = client.post("/api/pedidos", json=PEDIDO_VALIDO).json()
+def test_timestamps_saem_em_utc_com_z(client_atendente: TestClient) -> None:
+    corpo = client_atendente.post("/api/pedidos", json=PEDIDO_VALIDO).json()
     assert corpo["criado_em"].endswith("Z")
     assert corpo["atualizado_em"].endswith("Z")
-    lista = client.get("/api/pedidos").json()
+    lista = client_atendente.get("/api/pedidos").json()
     assert lista[0]["criado_em"].endswith("Z")
 
 
-def test_preco_unitario_e_snapshot(client: TestClient, db_session) -> None:
+def test_preco_unitario_e_snapshot(client_atendente: TestClient, db_session) -> None:
     from decimal import Decimal
     from app import models
 
-    criado = client.post("/api/pedidos", json=PEDIDO_VALIDO).json()
+    criado = client_atendente.post("/api/pedidos", json=PEDIDO_VALIDO).json()
     db_session.get(models.Produto, 1).preco = Decimal("99.00")
     db_session.commit()
 
-    depois = client.get(f"/api/pedidos/{criado['id']}").json()
+    depois = client_atendente.get(f"/api/pedidos/{criado['id']}").json()
     assert depois["itens"][0]["preco_unitario"] == "18.00"
     assert depois["total"] == "48.00"
 
 
-def test_editar_pedido_remove_itens_antigos(client: TestClient, db_session) -> None:
+def test_editar_pedido_remove_itens_antigos(client_atendente: TestClient, db_session) -> None:
     from app import models
 
-    criado = client.post("/api/pedidos", json=PEDIDO_VALIDO).json()
+    criado = client_atendente.post("/api/pedidos", json=PEDIDO_VALIDO).json()
     assert db_session.query(models.ItemPedido).count() == 2
 
-    resp = client.put(
+    resp = client_atendente.put(
         f"/api/pedidos/{criado['id']}",
         json={"cliente_nome": "M", "itens": [{"produto_id": 3, "quantidade": 2}]},
     )
@@ -206,28 +206,28 @@ def test_editar_pedido_remove_itens_antigos(client: TestClient, db_session) -> N
     assert db_session.query(models.ItemPedido).count() == 1
 
 
-def test_produto_nome_e_snapshot(client: TestClient, db_session) -> None:
+def test_produto_nome_e_snapshot(client_atendente: TestClient, db_session) -> None:
     from app import models
 
-    criado = client.post("/api/pedidos", json=PEDIDO_VALIDO).json()
+    criado = client_atendente.post("/api/pedidos", json=PEDIDO_VALIDO).json()
     db_session.get(models.Produto, 1).nome = "X-Salada Supreme"
     db_session.commit()
 
-    depois = client.get(f"/api/pedidos/{criado['id']}").json()
+    depois = client_atendente.get(f"/api/pedidos/{criado['id']}").json()
     assert depois["itens"][0]["produto_nome"] == "X-Salada"
 
 
 def test_editar_pedido_mantem_item_que_ficou_indisponivel(
-    client: TestClient, db_session
+    client_atendente: TestClient, db_session
 ) -> None:
     from app import models
 
-    criado = client.post("/api/pedidos", json=PEDIDO_VALIDO).json()
+    criado = client_atendente.post("/api/pedidos", json=PEDIDO_VALIDO).json()
 
     db_session.get(models.Produto, 1).disponivel = False
     db_session.commit()
 
-    resp = client.put(
+    resp = client_atendente.put(
         f"/api/pedidos/{criado['id']}",
         json={
             "cliente_nome": "Maria Atualizada",
@@ -239,16 +239,16 @@ def test_editar_pedido_mantem_item_que_ficou_indisponivel(
 
 
 def test_editar_pedido_nao_pode_adicionar_produto_indisponivel(
-    client: TestClient, db_session
+    client_atendente: TestClient, db_session
 ) -> None:
     from app import models
 
-    criado = client.post("/api/pedidos", json=PEDIDO_VALIDO).json()
+    criado = client_atendente.post("/api/pedidos", json=PEDIDO_VALIDO).json()
 
     db_session.get(models.Produto, 3).disponivel = False  # X-Tudo, nao estava no pedido
     db_session.commit()
 
-    resp = client.put(
+    resp = client_atendente.put(
         f"/api/pedidos/{criado['id']}",
         json={
             "cliente_nome": "Maria",
@@ -257,3 +257,8 @@ def test_editar_pedido_nao_pode_adicionar_produto_indisponivel(
     )
     assert resp.status_code == 400
     assert "indisponível" in resp.json()["detail"]
+
+
+def test_criar_pedido_sem_sessao_401(client: TestClient) -> None:
+    resp = client.post("/api/pedidos", json=PEDIDO_VALIDO)
+    assert resp.status_code == 401
