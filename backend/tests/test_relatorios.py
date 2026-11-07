@@ -1,3 +1,5 @@
+from datetime import datetime, timedelta, timezone
+
 from fastapi.testclient import TestClient
 
 PEDIDO_A = {
@@ -62,3 +64,32 @@ def test_buscar_pedidos_por_cliente(client_atendente: TestClient) -> None:
     corpo = resp.json()
     assert len(corpo) == 1
     assert corpo[0]["cliente_nome"] == "Bruno"
+
+
+def test_filtro_data_fim_normaliza_para_utc(client_admin: TestClient) -> None:
+    """Regressao: `data_fim` com offset explicito (ex: +03:00) precisa ser
+    convertido para o instante UTC equivalente antes de comparar com
+    `criado_em` -- nunca usando os campos literais (ano/mes/.../segundo)
+    como se já fossem UTC.
+
+    O pedido é criado "agora" (UTC). Escolhemos um `data_fim` cujo
+    instante real em UTC é 1 minuto ANTES da criação do pedido -- esse
+    pedido deve, portanto, ficar FORA do filtro. Mas o valor literal
+    (wall-clock) desse mesmo `data_fim`, se o offset fosse ignorado, cai
+    quase 3h DEPOIS da criação do pedido -- o que incluiria o pedido
+    erroneamente. Se a normalização de fuso for removida, este teste
+    volta a falhar (total_pedidos passaria de 0 para 1)."""
+    client_admin.post("/api/pedidos", json=PEDIDO_A)
+
+    agora_utc = datetime.now(timezone.utc)
+    instante_utc_desejado = agora_utc - timedelta(minutes=1)
+    offset = timezone(timedelta(hours=3))
+    data_fim_com_offset = instante_utc_desejado.astimezone(offset)
+
+    resp = client_admin.get(
+        "/api/relatorios/resumo",
+        params={"data_fim": data_fim_com_offset.isoformat()},
+    )
+    assert resp.status_code == 200
+    corpo = resp.json()
+    assert corpo["total_pedidos"] == 0

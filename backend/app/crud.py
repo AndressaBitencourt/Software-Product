@@ -1,4 +1,4 @@
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 from decimal import Decimal
 
 from sqlalchemy import func, select
@@ -152,12 +152,29 @@ def criar_pedido(db: Session, dados: schemas.PedidoIn) -> models.Pedido:
     return pedido
 
 
+def _normalizar_utc(momento: datetime | None) -> datetime | None:
+    """SQLite guarda `criado_em` como texto ingenuo (sempre produzido por
+    `utcnow()`, portanto ja em UTC). O bind processor do dialeto sqlite
+    formata datetimes usando os campos literais (ano/mes/.../microsegundo)
+    e IGNORA o tzinfo -- nao faz `.astimezone(utc)` sozinho. Como esta
+    funcao e o unico ponto onde datetimes vindos de fora (query params)
+    entram na comparacao com `criado_em`, qualquer datetime com offset
+    explicito precisa ser convertido para UTC aqui antes da comparacao --
+    senao o filtro desliza pelo valor do offset. Datetime ingenuo (sem
+    tzinfo) e deixado como esta, pois ja é assumido UTC."""
+    if momento is not None and momento.tzinfo is not None:
+        return momento.astimezone(timezone.utc)
+    return momento
+
+
 def listar_pedidos(
     db: Session,
     cliente_nome: str | None = None,
     data_inicio: datetime | None = None,
     data_fim: datetime | None = None,
 ) -> list[models.Pedido]:
+    data_inicio = _normalizar_utc(data_inicio)
+    data_fim = _normalizar_utc(data_fim)
     stmt = select(models.Pedido).order_by(
         models.Pedido.criado_em.desc(), models.Pedido.id.desc()
     )
@@ -256,6 +273,8 @@ def faturamento_diario(
 def produtos_mais_vendidos(
     db: Session, data_inicio: datetime, data_fim: datetime, limite: int
 ) -> list[tuple[str, int]]:
+    data_inicio = _normalizar_utc(data_inicio)
+    data_fim = _normalizar_utc(data_fim)
     stmt = (
         select(
             models.ItemPedido.produto_nome,
