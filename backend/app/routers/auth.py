@@ -30,6 +30,7 @@ def logout(
     response: Response,
     sessao_token: str | None = Cookie(default=None),
     db: Session = Depends(get_db),
+    _usuario: models.Usuario = Depends(auth.usuario_logado),
 ):
     if sessao_token is not None:
         auth.excluir_sessao(db, sessao_token)

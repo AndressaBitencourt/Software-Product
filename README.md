@@ -4,7 +4,7 @@ Este é o meu trabalho de faculdade, entregue em 3 fases. Na **Fase 1** eu fiz o
 CRUD completo de pedidos, com front-end, back-end e banco de dados. Na **Fase
 2** acrescentei a gestão de cardápio — criar, editar e excluir produtos, com
 fotos, categorias e promoções, numa página própria. Na **Fase 3** adicionei
-login com perfis (cliente / atendente / admin), protegendo as rotas sensíveis,
+login com perfis (atendente / admin), protegendo as rotas sensíveis,
 e uma página de relatórios com resumo de vendas, gráficos e busca de pedidos.
 
 ## Tecnologias que usei
@@ -25,8 +25,10 @@ e uma página de relatórios com resumo de vendas, gráficos e busca de pedidos.
 > `no such column`.
 
 > **Login padrão (Fase 3):** e-mail `admin@hamburgueria.com`, senha
-> `admin123` — criado automaticamente na primeira execução. É só uma
-> credencial de demonstração para a entrega da faculdade.
+> `admin123` (perfil admin) — criado automaticamente na primeira execução.
+> Também existe um login de demonstração com perfil atendente: e-mail
+> `atendente@hamburgueria.com`, senha `atendente123`. São só credenciais de
+> demonstração para a entrega da faculdade.
 
 ### Opção mais fácil — script pronto
 
@@ -101,7 +103,7 @@ pytest -v
 | --- | --- | --- |
 | 1 | CRUD de pedidos | ✅ Feito |
 | 2 | Gestão de cardápio (CRUD de produtos, fotos, promoções) | ✅ Feito (escopo reduzido — ver nota abaixo) |
-| 3 | Login e perfis (cliente / atendente / admin) + relatórios e dashboard | ✅ Feito |
+| 3 | Login e perfis (atendente / admin) + relatórios e dashboard | ✅ Feito |
 
 > A Fase 2 originalmente incluía também o fluxo de status do pedido
 > (Recebido → Preparo → Pronto → Entregue/Cancelado), conta detalhada e tela

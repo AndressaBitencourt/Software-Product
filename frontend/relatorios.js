@@ -41,6 +41,15 @@ function initMenu() {
   });
 }
 
+async function fetchJson(url) {
+  const resp = await fetch(url);
+  if (resp.status === 401) {
+    window.location.href = "/login.html";
+    throw new Error("Sessão expirada.");
+  }
+  return resp.json();
+}
+
 async function verificarSessao(papelExigido) {
   const resp = await fetch(`${API}/me`);
   if (resp.status === 401) {
@@ -73,18 +82,16 @@ function periodoSelecionado() {
 }
 
 async function carregarResumo() {
-  const resp = await fetch(`${API}/relatorios/resumo?${periodoSelecionado()}`);
-  const corpo = await resp.json();
+  const corpo = await fetchJson(`${API}/relatorios/resumo?${periodoSelecionado()}`);
   $("#resumo-total-pedidos").textContent = corpo.total_pedidos;
   $("#resumo-faturamento").textContent = brl(corpo.faturamento_total);
   $("#resumo-ticket-medio").textContent = brl(corpo.ticket_medio);
 }
 
 async function carregarGraficoFaturamento() {
-  const resp = await fetch(
+  const dados = await fetchJson(
     `${API}/relatorios/faturamento-diario?${periodoSelecionado()}`
   );
-  const dados = await resp.json();
   const ctx = $("#grafico-faturamento");
   if (graficoFaturamento) graficoFaturamento.destroy();
   graficoFaturamento = new Chart(ctx, {
@@ -104,10 +111,9 @@ async function carregarGraficoFaturamento() {
 }
 
 async function carregarGraficoProdutos() {
-  const resp = await fetch(
+  const dados = await fetchJson(
     `${API}/relatorios/produtos-mais-vendidos?${periodoSelecionado()}`
   );
-  const dados = await resp.json();
   const ctx = $("#grafico-produtos");
   if (graficoProdutos) graficoProdutos.destroy();
   graficoProdutos = new Chart(ctx, {
@@ -134,8 +140,7 @@ async function buscarPedidos() {
   const params = periodoSelecionado();
   const cliente = $("#busca-cliente").value.trim();
   if (cliente) params.set("cliente_nome", cliente);
-  const resp = await fetch(`${API}/pedidos?${params}`);
-  const pedidos = await resp.json();
+  const pedidos = await fetchJson(`${API}/pedidos?${params}`);
   const tbody = $("#lista-pedidos-busca");
   tbody.innerHTML = "";
   $("#busca-vazia").hidden = pedidos.length > 0;
@@ -179,5 +184,10 @@ initMenu();
   const usuario = await verificarSessao("admin");
   if (!usuario) return;
   aplicarUsuarioNoMenu(usuario);
+  const hoje = new Date();
+  const trintaDiasAtras = new Date(hoje);
+  trintaDiasAtras.setDate(hoje.getDate() - 30);
+  $("#data_fim").value = hoje.toISOString().slice(0, 10);
+  $("#data_inicio").value = trintaDiasAtras.toISOString().slice(0, 10);
   await recarregarTudo();
 })();
