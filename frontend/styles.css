@@ -354,3 +354,31 @@ th { background: #F6F0E2; font-family: "Fraunces", serif; font-weight: 600; }
   color: var(--muted);
   padding: 0 12px;
 }
+
+.cards-resumo {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+}
+.card-resumo {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.card-resumo small { color: var(--muted); }
+.card-resumo strong { font-size: 1.5rem; font-family: "Fraunces", serif; }
+
+#secao-graficos canvas { max-width: 100%; margin-bottom: 24px; }
+
+#form-filtro, #form-busca {
+  display: flex;
+  gap: 12px;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  margin: 10px 0 16px;
+}
+#form-filtro label, #form-busca label { margin-bottom: 0; }

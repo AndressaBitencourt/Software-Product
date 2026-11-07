@@ -50,3 +50,10 @@ def test_login_serve_a_pagina(client: TestClient) -> None:
     assert resp.status_code == 200
     assert "Entrar" in resp.text
     assert "login.js" in resp.text
+
+
+def test_relatorios_serve_a_pagina(client: TestClient) -> None:
+    resp = client.get("/relatorios.html")
+    assert resp.status_code == 200
+    assert "Relatórios" in resp.text
+    assert "relatorios.js" in resp.text
