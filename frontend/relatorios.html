@@ -14,7 +14,7 @@
     <h1>🍔 Hamburgueria — Relatórios</h1>
     <button class="hamb-btn" id="btn-menu" aria-label="Abrir menu" aria-expanded="false">☰</button>
     <nav class="hamb-menu" id="menu-nav" hidden>
-      <a href="/">Pedidos</a>
+      <a href="/painel-pedidos.html">Painel de Pedidos</a>
       <a href="/cardapio-admin.html">Gerenciar Cardápio</a>
       <a href="/relatorios.html" class="active">Relatórios</a>
       <div class="menu-usuario">
@@ -58,12 +58,17 @@
     </section>
 
     <section id="secao-graficos">
-      <h2>Faturamento por dia</h2>
-      <small>Os dias são agrupados em UTC, o que pode diferir em algumas horas do horário local para pedidos próximos da meia-noite.</small>
-      <canvas id="grafico-faturamento"></canvas>
+      <div class="grafico-dark-card">
+        <h2>Faturamento por dia</h2>
+        <small>Os dias são agrupados em UTC, o que pode diferir em algumas horas do horário local para pedidos próximos da meia-noite.</small>
+        <canvas id="grafico-faturamento"></canvas>
+      </div>
 
-      <h2>Produtos mais vendidos</h2>
-      <canvas id="grafico-produtos"></canvas>
+      <div class="grafico-dark-card">
+        <h2>Produtos mais vendidos</h2>
+        <small>Top produtos por quantidade vendida no período.</small>
+        <canvas id="grafico-produtos"></canvas>
+      </div>
     </section>
 
     <section id="secao-busca-pedidos">

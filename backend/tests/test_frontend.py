@@ -57,3 +57,17 @@ def test_relatorios_serve_a_pagina(client: TestClient) -> None:
     assert resp.status_code == 200
     assert "Relatórios" in resp.text
     assert "relatorios.js" in resp.text
+
+
+def test_carrinho_serve_a_pagina(client: TestClient) -> None:
+    resp = client.get("/carrinho.html")
+    assert resp.status_code == 200
+    assert "Carrinho" in resp.text
+    assert "carrinho.js" in resp.text
+
+
+def test_painel_pedidos_serve_a_pagina(client: TestClient) -> None:
+    resp = client.get("/painel-pedidos.html")
+    assert resp.status_code == 200
+    assert "Painel de Pedidos" in resp.text
+    assert "painel-pedidos.js" in resp.text

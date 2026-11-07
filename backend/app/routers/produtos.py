@@ -11,7 +11,6 @@ router = APIRouter(prefix="/api/produtos", tags=["produtos"])
 def listar(
     incluir_indisponiveis: bool = False,
     db: Session = Depends(get_db),
-    _usuario: models.Usuario = Depends(auth.usuario_logado),
 ) -> list[models.Produto]:
     return crud.listar_produtos(db, incluir_indisponiveis)
 
@@ -20,7 +19,6 @@ def listar(
 def detalhar(
     produto_id: int,
     db: Session = Depends(get_db),
-    _usuario: models.Usuario = Depends(auth.usuario_logado),
 ):
     produto = crud.obter_produto(db, produto_id)
     if produto is None:

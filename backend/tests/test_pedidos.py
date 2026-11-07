@@ -259,6 +259,11 @@ def test_editar_pedido_nao_pode_adicionar_produto_indisponivel(
     assert "indisponível" in resp.json()["detail"]
 
 
-def test_criar_pedido_sem_sessao_401(client: TestClient) -> None:
+def test_criar_pedido_sem_sessao_e_publico(client: TestClient) -> None:
     resp = client.post("/api/pedidos", json=PEDIDO_VALIDO)
+    assert resp.status_code == 201
+
+
+def test_listar_pedidos_sem_sessao_401(client: TestClient) -> None:
+    resp = client.get("/api/pedidos")
     assert resp.status_code == 401

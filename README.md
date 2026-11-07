@@ -7,6 +7,12 @@ fotos, categorias e promoções, numa página própria. Na **Fase 3** adicionei
 login com perfis (atendente / admin), protegendo as rotas sensíveis,
 e uma página de relatórios com resumo de vendas, gráficos e busca de pedidos.
 
+Depois da entrega da Fase 3, revi a decisão de "cliente não loga": agora o
+cardápio e o carrinho são públicos (o cliente monta e finaliza o próprio
+pedido pelo celular, sem precisar de atendente), e quem loga (atendente /
+admin) usa o **Painel de Pedidos** pra acompanhar o que chega. Ver
+`docs/design-fase-3.md`, seção 10, pro histórico dessa mudança.
+
 ## Tecnologias que usei
 
 - Back-end: Python 3.12 + FastAPI
@@ -28,7 +34,10 @@ e uma página de relatórios com resumo de vendas, gráficos e busca de pedidos.
 > `admin123` (perfil admin) — criado automaticamente na primeira execução.
 > Também existe um login de demonstração com perfil atendente: e-mail
 > `atendente@hamburgueria.com`, senha `atendente123`. São só credenciais de
-> demonstração para a entrega da faculdade.
+> demonstração para a entrega da faculdade. **Esse login só é necessário
+> pra acompanhar os pedidos (`/painel-pedidos.html`)** — o cardápio (`/`) e
+> o carrinho (`/carrinho.html`) são públicos, qualquer cliente usa sem
+> entrar com conta.
 
 ### Opção mais fácil — script pronto
 
@@ -94,7 +103,7 @@ pytest -v
 
 - `backend/app/` — API FastAPI (models, schemas, crud, serializers, routers)
 - `backend/tests/` — meus testes automatizados
-- `frontend/` — páginas servidas pelo próprio back-end: pedidos (`index.html`), gestão de cardápio (`cardapio-admin.html`), login (`login.html`) e relatórios (`relatorios.html`)
+- `frontend/` — páginas servidas pelo próprio back-end: cardápio público (`index.html`), carrinho (`carrinho.html`), painel de pedidos (`painel-pedidos.html`, exige login), gestão de cardápio (`cardapio-admin.html`), login (`login.html`) e relatórios (`relatorios.html`)
 - `docs/` — o design e o plano de implementação que escrevi antes de codar
 
 ## Roadmap

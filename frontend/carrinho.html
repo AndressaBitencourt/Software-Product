@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Hamburgueria — Carrinho</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600&family=Work+Sans:wght@400;500;600&display=swap">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header>
+    <h1>🍔 Hamburgueria</h1>
+    <a href="/carrinho.html" class="cart-link active" id="link-carrinho" aria-label="Ver carrinho">
+      🛒 <span id="carrinho-contador" class="cart-badge" hidden>0</span>
+    </a>
+    <button class="hamb-btn" id="btn-menu" aria-label="Abrir menu" aria-expanded="false">☰</button>
+    <nav class="hamb-menu" id="menu-nav" hidden>
+      <a href="/">Cardápio</a>
+      <a href="/carrinho.html" class="active">Carrinho</a>
+      <a href="/login.html">Área do Funcionário</a>
+    </nav>
+  </header>
+
+  <div id="aviso" class="aviso" hidden></div>
+
+  <main>
+    <section id="secao-carrinho">
+      <h2>Seu carrinho</h2>
+      <ul id="itens-carrinho" class="lista-carrinho"></ul>
+      <p id="carrinho-vazio" hidden>Seu carrinho está vazio. Volte ao <a href="/">cardápio</a> para adicionar itens.</p>
+      <p class="total">Total: <strong id="carrinho-total">R$ 0,00</strong></p>
+    </section>
+
+    <section id="secao-finalizar">
+      <h2>Finalizar pedido</h2>
+      <form id="form-finalizar">
+        <label>Seu nome
+          <input type="text" id="cliente_nome" maxlength="80" required />
+        </label>
+        <label>Observação
+          <input type="text" id="observacao" maxlength="255" />
+        </label>
+        <div class="acoes">
+          <button type="submit" id="btn-finalizar">Finalizar Pedido</button>
+        </div>
+      </form>
+    </section>
+
+    <section id="secao-confirmacao" class="confirmacao" hidden>
+      <div class="confirmacao-card">
+        <div class="confirmacao-icone">✓</div>
+        <h2>Pedido confirmado!</h2>
+        <p class="confirmacao-sub">Obrigado, <span id="confirmacao-nome"></span>! Seu pedido já está com a gente.</p>
+        <div class="confirmacao-resumo">
+          <div>
+            <small>Número do pedido</small>
+            <strong id="confirmacao-numero">#0</strong>
+          </div>
+          <div>
+            <small>Total</small>
+            <strong id="confirmacao-total">R$ 0,00</strong>
+          </div>
+        </div>
+        <a href="/" class="confirmacao-voltar">Voltar ao cardápio</a>
+      </div>
+    </section>
+  </main>
+
+  <script src="carrinho.js"></script>
+</body>
+</html>

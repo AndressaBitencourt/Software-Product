@@ -50,7 +50,7 @@ async function verificarSessao(papelExigido) {
   }
   const usuario = await resp.json();
   if (papelExigido && usuario.papel !== papelExigido) {
-    window.location.href = "/";
+    window.location.href = "/painel-pedidos.html";
     return null;
   }
   return usuario;

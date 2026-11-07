@@ -1,9 +1,8 @@
 "use strict";
 
 const API = "/api";
+const CARRINHO_KEY = "hamburgueria_carrinho";
 let cardapio = [];
-let carrinho = []; // [{ produto_id, nome, preco, quantidade }]
-let editandoId = null;
 let categoriaAtiva = "Todos";
 let carrosselItens = [];
 let carrosselIndex = 0;
@@ -17,6 +16,19 @@ function aviso(msg, tipo) {
   el.className = "aviso " + tipo;
   el.hidden = false;
   if (tipo === "ok") setTimeout(() => (el.hidden = true), 3000);
+}
+
+function mostrarToast(msg) {
+  const el = $("#toast");
+  if (!el) return;
+  el.textContent = msg;
+  el.hidden = false;
+  el.classList.add("mostrar");
+  clearTimeout(el.__timer);
+  el.__timer = setTimeout(() => {
+    el.classList.remove("mostrar");
+    el.hidden = true;
+  }, 2000);
 }
 
 function brl(valorStr) {
@@ -46,30 +58,24 @@ function initMenu() {
   });
 }
 
-async function verificarSessao(papelExigido) {
-  const resp = await fetch(`${API}/me`);
-  if (resp.status === 401) {
-    window.location.href = "/login.html";
-    return null;
+function lerCarrinho() {
+  try {
+    return JSON.parse(localStorage.getItem(CARRINHO_KEY)) || [];
+  } catch {
+    return [];
   }
-  const usuario = await resp.json();
-  if (papelExigido && usuario.papel !== papelExigido) {
-    window.location.href = "/";
-    return null;
-  }
-  return usuario;
 }
 
-function aplicarUsuarioNoMenu(usuario) {
-  $("#usuario-nome").textContent = usuario.nome;
-  const linkCardapio = $("#link-cardapio");
-  const linkRelatorios = $("#link-relatorios");
-  if (linkCardapio) linkCardapio.hidden = usuario.papel !== "admin";
-  if (linkRelatorios) linkRelatorios.hidden = usuario.papel !== "admin";
-  $("#btn-sair").addEventListener("click", async () => {
-    await fetch(`${API}/logout`, { method: "POST" });
-    window.location.href = "/login.html";
-  });
+function salvarCarrinho(carrinho) {
+  localStorage.setItem(CARRINHO_KEY, JSON.stringify(carrinho));
+}
+
+function atualizarContadorCarrinho() {
+  const badge = $("#carrinho-contador");
+  if (!badge) return;
+  const total = lerCarrinho().reduce((soma, item) => soma + item.quantidade, 0);
+  badge.textContent = total;
+  badge.hidden = total === 0;
 }
 
 async function api(caminho, opcoes) {
@@ -237,6 +243,7 @@ async function carregarCardapio() {
 
 function adicionar(produtoId) {
   const prod = cardapio.find((p) => p.id === produtoId);
+  const carrinho = lerCarrinho();
   const existente = carrinho.find((i) => i.produto_id === produtoId);
   if (existente) existente.quantidade += 1;
   else
@@ -246,171 +253,11 @@ function adicionar(produtoId) {
       preco: prod.preco,
       quantidade: 1,
     });
-  renderCarrinho();
+  salvarCarrinho(carrinho);
+  atualizarContadorCarrinho();
+  mostrarToast(`${prod.nome} adicionado ao carrinho!`);
 }
 
-function renderCarrinho() {
-  const ul = $("#carrinho");
-  ul.innerHTML = "";
-  let total = 0;
-  carrinho.forEach((item, idx) => {
-    total += Number(item.preco) * item.quantidade;
-    const li = document.createElement("li");
-    li.innerHTML = `
-      <span>${item.nome}</span>
-      <input type="number" min="1" value="${item.quantidade}" />
-      <button type="button" class="perigo">x</button>`;
-    li.querySelector("input").addEventListener("change", (e) => {
-      const q = parseInt(e.target.value, 10);
-      item.quantidade = Number.isNaN(q) || q < 1 ? 1 : q;
-      renderCarrinho();
-    });
-    li.querySelector("button").addEventListener("click", () => {
-      carrinho.splice(idx, 1);
-      renderCarrinho();
-    });
-    ul.appendChild(li);
-  });
-  $("#carrinho-vazio").hidden = carrinho.length > 0;
-  $("#form-total").textContent = brl(total.toFixed(2));
-}
-
-function entrarModoEdicao(pedido) {
-  editandoId = pedido.id;
-  $("#form-titulo").textContent = `Editar pedido #${pedido.id}`;
-  $("#btn-salvar").textContent = "Salvar alterações";
-  $("#btn-cancelar").hidden = false;
-  $("#cliente_nome").value = pedido.cliente_nome;
-  $("#observacao").value = pedido.observacao ?? "";
-  carrinho = pedido.itens.map((i) => ({
-    produto_id: i.produto_id,
-    nome: i.produto_nome,
-    preco: i.preco_unitario,
-    quantidade: i.quantidade,
-  }));
-  renderCarrinho();
-  $("#secao-form").scrollIntoView({ behavior: "smooth" });
-}
-
-function sairModoEdicao() {
-  editandoId = null;
-  $("#form-titulo").textContent = "Novo pedido";
-  $("#btn-salvar").textContent = "Fazer pedido";
-  $("#btn-cancelar").hidden = true;
-  $("#form-pedido").reset();
-  carrinho = [];
-  renderCarrinho();
-}
-
-async function submeter(evento) {
-  evento.preventDefault();
-  const payload = {
-    cliente_nome: $("#cliente_nome").value.trim(),
-    observacao: $("#observacao").value.trim() || null,
-    itens: carrinho.map((i) => ({
-      produto_id: i.produto_id,
-      quantidade: i.quantidade,
-    })),
-  };
-  try {
-    if (editandoId) {
-      await api(`/pedidos/${editandoId}`, {
-        method: "PUT",
-        body: JSON.stringify(payload),
-      });
-      aviso("Pedido atualizado.", "ok");
-    } else {
-      await api("/pedidos", {
-        method: "POST",
-        body: JSON.stringify(payload),
-      });
-      aviso("Pedido criado.", "ok");
-    }
-    sairModoEdicao();
-    await carregarPedidos();
-  } catch (e) {
-    aviso(e.message, "erro");
-  }
-}
-
-async function carregarPedidos() {
-  const pedidos = await api("/pedidos");
-  const tbody = $("#lista-pedidos");
-  tbody.innerHTML = "";
-  $("#pedidos-vazio").hidden = pedidos.length > 0;
-  for (const p of pedidos) {
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td>${p.id}</td>
-      <td>${esc(p.cliente_nome)}</td>
-      <td>${p.quantidade_itens}</td>
-      <td>${brl(p.total)}</td>
-      <td>${p.status}</td>
-      <td>${new Date(p.criado_em).toLocaleString("pt-BR")}</td>
-      <td></td>`;
-    const acoes = tr.lastElementChild;
-
-    const bVer = document.createElement("button");
-    bVer.textContent = "Ver";
-    bVer.className = "secundario";
-    bVer.addEventListener("click", () => verDetalhe(p.id, tr));
-
-    const bEditar = document.createElement("button");
-    bEditar.textContent = "Editar";
-    bEditar.addEventListener("click", async () => {
-      try {
-        entrarModoEdicao(await api(`/pedidos/${p.id}`));
-      } catch (e) {
-        aviso(e.message, "erro");
-      }
-    });
-
-    const bExcluir = document.createElement("button");
-    bExcluir.textContent = "Excluir";
-    bExcluir.className = "perigo";
-    bExcluir.addEventListener("click", async () => {
-      if (!confirm(`Excluir o pedido #${p.id}?`)) return;
-      try {
-        await api(`/pedidos/${p.id}`, { method: "DELETE" });
-        aviso("Pedido excluído.", "ok");
-        await carregarPedidos();
-      } catch (e) {
-        aviso(e.message, "erro");
-      }
-    });
-
-    acoes.append(bVer, bEditar, bExcluir);
-    tbody.appendChild(tr);
-  }
-}
-
-async function verDetalhe(pedidoId, linha) {
-  const proxima = linha.nextElementSibling;
-  if (proxima && proxima.classList.contains("detalhe-itens")) {
-    proxima.remove();
-    return;
-  }
-  try {
-    const p = await api(`/pedidos/${pedidoId}`);
-    const tr = document.createElement("tr");
-    tr.className = "detalhe-itens";
-    const linhas = p.itens
-      .map(
-        (i) =>
-          `${i.quantidade}x ${esc(i.produto_nome)} — ${brl(i.preco_unitario)} (subtotal ${brl(i.subtotal)})`
-      )
-      .join("<br />");
-    tr.innerHTML = `<td colspan="7">${linhas}<br /><strong>Total: ${brl(p.total)}</strong>${
-      p.observacao ? "<br />Obs.: " + esc(p.observacao) : ""
-    }</td>`;
-    linha.after(tr);
-  } catch (e) {
-    aviso(e.message, "erro");
-  }
-}
-
-$("#form-pedido").addEventListener("submit", submeter);
-$("#btn-cancelar").addEventListener("click", sairModoEdicao);
 $(".carrossel-anterior").addEventListener("click", () => {
   slideAnteriorCarrossel();
   iniciarCarrossel();
@@ -420,16 +267,12 @@ $(".carrossel-proxima").addEventListener("click", () => {
   iniciarCarrossel();
 });
 initMenu();
+atualizarContadorCarrinho();
 
 (async function iniciar() {
-  const usuario = await verificarSessao();
-  if (!usuario) return;
-  aplicarUsuarioNoMenu(usuario);
   try {
     await carregarCardapio();
-    await carregarPedidos();
-    renderCarrinho();
   } catch (e) {
-    aviso("Falha ao carregar dados: " + e.message, "erro");
+    aviso("Falha ao carregar o cardápio: " + e.message, "erro");
   }
 })();

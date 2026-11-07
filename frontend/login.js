@@ -24,7 +24,7 @@ $("#form-login").addEventListener("submit", async (evento) => {
       const corpo = await resp.json().catch(() => ({}));
       throw new Error(corpo.detail || "E-mail ou senha inválidos.");
     }
-    window.location.href = "/";
+    window.location.href = "/painel-pedidos.html";
   } catch (e) {
     aviso(e.message, "erro");
   }

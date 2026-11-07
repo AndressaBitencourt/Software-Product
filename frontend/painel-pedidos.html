@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Hamburgueria — Painel de Pedidos</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600&family=Work+Sans:wght@400;500;600&display=swap">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header>
+    <h1>🍔 Hamburgueria — Painel de Pedidos</h1>
+    <button class="hamb-btn" id="btn-menu" aria-label="Abrir menu" aria-expanded="false">☰</button>
+    <nav class="hamb-menu" id="menu-nav" hidden>
+      <a href="/painel-pedidos.html" class="active">Painel de Pedidos</a>
+      <a href="/cardapio-admin.html" id="link-cardapio">Gerenciar Cardápio</a>
+      <a href="/relatorios.html" id="link-relatorios">Relatórios</a>
+      <div class="menu-usuario">
+        <span id="usuario-nome"></span>
+        <button type="button" id="btn-sair" class="secundario">Sair</button>
+      </div>
+    </nav>
+  </header>
+
+  <div id="aviso" class="aviso" hidden></div>
+
+  <main>
+    <section id="secao-pedidos">
+      <h2>Pedidos</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>#</th><th>Cliente</th><th>Itens</th><th>Total</th>
+            <th>Status</th><th>Criado em</th><th></th>
+          </tr>
+        </thead>
+        <tbody id="lista-pedidos"></tbody>
+      </table>
+      <p id="pedidos-vazio">Nenhum pedido ainda.</p>
+    </section>
+  </main>
+
+  <script src="painel-pedidos.js"></script>
+</body>
+</html>

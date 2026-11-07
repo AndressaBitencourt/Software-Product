@@ -58,7 +58,7 @@ async function verificarSessao(papelExigido) {
   }
   const usuario = await resp.json();
   if (papelExigido && usuario.papel !== papelExigido) {
-    window.location.href = "/";
+    window.location.href = "/painel-pedidos.html";
     return null;
   }
   return usuario;
@@ -88,6 +88,11 @@ async function carregarResumo() {
   $("#resumo-ticket-medio").textContent = brl(corpo.ticket_medio);
 }
 
+const PALETA_PRODUTOS = [
+  "#F0A94E", "#E8574B", "#4FB6A8", "#8C6FD1", "#5AA7E0",
+  "#C2D34E", "#E06BA8", "#F2C14E", "#6FD1A5", "#D97B4F",
+];
+
 async function carregarGraficoFaturamento() {
   const dados = await fetchJson(
     `${API}/relatorios/faturamento-diario?${periodoSelecionado()}`
@@ -102,11 +107,36 @@ async function carregarGraficoFaturamento() {
         {
           label: "Faturamento (R$)",
           data: dados.map((d) => Number(d.total)),
-          backgroundColor: "#E8A33D",
+          backgroundColor: (contexto) => {
+            const { chartArea, ctx: canvasCtx } = contexto.chart;
+            if (!chartArea) return "#E8A33D";
+            const gradiente = canvasCtx.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
+            gradiente.addColorStop(0, "#F0A94E");
+            gradiente.addColorStop(1, "#C23B52");
+            return gradiente;
+          },
+          borderRadius: 6,
+          maxBarThickness: 46,
         },
       ],
     },
-    options: { responsive: true, plugins: { legend: { display: false } } },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: (item) => brl(item.parsed.y) } },
+      },
+      scales: {
+        x: {
+          grid: { display: false },
+          ticks: { color: "#cfc4dd" },
+        },
+        y: {
+          grid: { color: "rgba(255, 255, 255, 0.08)" },
+          ticks: { color: "#cfc4dd", callback: (valor) => brl(valor) },
+        },
+      },
+    },
   });
 }
 
@@ -124,7 +154,9 @@ async function carregarGraficoProdutos() {
         {
           label: "Quantidade vendida",
           data: dados.map((d) => d.quantidade_total),
-          backgroundColor: "#7A1F1F",
+          backgroundColor: dados.map((_, i) => PALETA_PRODUTOS[i % PALETA_PRODUTOS.length]),
+          borderRadius: 6,
+          maxBarThickness: 28,
         },
       ],
     },
@@ -132,6 +164,16 @@ async function carregarGraficoProdutos() {
       indexAxis: "y",
       responsive: true,
       plugins: { legend: { display: false } },
+      scales: {
+        x: {
+          grid: { color: "rgba(255, 255, 255, 0.08)" },
+          ticks: { color: "#cfc4dd" },
+        },
+        y: {
+          grid: { display: false },
+          ticks: { color: "#cfc4dd" },
+        },
+      },
     },
   });
 }

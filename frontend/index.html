@@ -3,26 +3,26 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Hamburgueria — Pedidos</title>
+  <title>Hamburgueria — Cardápio</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600&family=Work+Sans:wght@400;500;600&display=swap">
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <header>
-    <h1>🍔 Hamburgueria — Pedidos</h1>
+    <h1>🍔 Hamburgueria</h1>
+    <a href="/carrinho.html" class="cart-link" id="link-carrinho" aria-label="Ver carrinho">
+      🛒 <span id="carrinho-contador" class="cart-badge" hidden>0</span>
+    </a>
     <button class="hamb-btn" id="btn-menu" aria-label="Abrir menu" aria-expanded="false">☰</button>
     <nav class="hamb-menu" id="menu-nav" hidden>
-      <a href="/" class="active">Pedidos</a>
-      <a href="/cardapio-admin.html" id="link-cardapio">Gerenciar Cardápio</a>
-      <a href="/relatorios.html" id="link-relatorios">Relatórios</a>
-      <div class="menu-usuario">
-        <span id="usuario-nome"></span>
-        <button type="button" id="btn-sair" class="secundario">Sair</button>
-      </div>
+      <a href="/" class="active">Cardápio</a>
+      <a href="/carrinho.html">Carrinho</a>
+      <a href="/login.html">Área do Funcionário</a>
     </nav>
   </header>
 
+  <div id="toast" class="toast" hidden></div>
   <div id="aviso" class="aviso" hidden></div>
 
   <section id="secao-ofertas" hidden>
@@ -40,42 +40,6 @@
       <h2>Cardápio</h2>
       <div id="categoria-tabs" class="categoria-tabs"></div>
       <div id="cardapio" class="cards"></div>
-    </section>
-
-    <section id="secao-form">
-      <h2 id="form-titulo">Novo pedido</h2>
-      <form id="form-pedido">
-        <label>Cliente
-          <input type="text" id="cliente_nome" maxlength="80" required />
-        </label>
-        <label>Observação
-          <input type="text" id="observacao" maxlength="255" />
-        </label>
-
-        <h3>Itens</h3>
-        <ul id="carrinho"></ul>
-        <p id="carrinho-vazio">Nenhum item. Use "Adicionar" no cardápio.</p>
-        <p class="total">Total: <strong id="form-total">R$ 0,00</strong></p>
-
-        <div class="acoes">
-          <button type="submit" id="btn-salvar">Fazer pedido</button>
-          <button type="button" id="btn-cancelar" hidden>Cancelar edição</button>
-        </div>
-      </form>
-    </section>
-
-    <section id="secao-pedidos">
-      <h2>Pedidos</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>#</th><th>Cliente</th><th>Itens</th><th>Total</th>
-            <th>Status</th><th>Criado em</th><th></th>
-          </tr>
-        </thead>
-        <tbody id="lista-pedidos"></tbody>
-      </table>
-      <p id="pedidos-vazio">Nenhum pedido ainda.</p>
     </section>
   </main>
 

@@ -15,7 +15,6 @@ router = APIRouter(prefix="/api/pedidos", tags=["pedidos"])
 def criar(
     dados: schemas.PedidoIn,
     db: Session = Depends(get_db),
-    _usuario: models.Usuario = Depends(auth.usuario_logado),
 ):
     try:
         pedido = crud.criar_pedido(db, dados)

@@ -331,6 +331,11 @@ def test_criar_produto_sem_permissao_403(client_atendente: TestClient) -> None:
     assert resp.status_code == 403
 
 
-def test_listar_produtos_sem_sessao_401(client: TestClient) -> None:
+def test_listar_produtos_sem_sessao_e_publico(client: TestClient) -> None:
     resp = client.get("/api/produtos")
-    assert resp.status_code == 401
+    assert resp.status_code == 200
+
+
+def test_detalhar_produto_sem_sessao_e_publico(client: TestClient) -> None:
+    resp = client.get("/api/produtos/1")
+    assert resp.status_code == 200

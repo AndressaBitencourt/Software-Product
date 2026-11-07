@@ -277,3 +277,60 @@ de JWT nem de assinatura de cookie.
   projeto de duplicar helpers pequenos em vez de compartilhar módulo, mas uma
   mudança futura em como o preço do item é calculado (ex: usar
   `preco_promocional`) precisa ser replicada nos dois lugares.
+
+---
+
+## 10. Histórico — revertendo "cliente não loga" (2026-11-07)
+
+A decisão da seção 1 ("cliente não loga", app como ferramenta de balcão) foi
+revista depois da fase entregue. Pedido veio do uso real: o cliente devia
+poder montar o próprio pedido pelo celular, sem precisar de um atendente
+digitando por ele — e o atendente passa a ser quem **acompanha** os pedidos
+que chegam, não quem os cria.
+
+Isso move a fronteira de autenticação: antes, só a tela de login era
+pública; agora **navegar o cardápio e fazer um pedido** também são. O que
+continua exigindo login é só a gestão (ver todos os pedidos, excluir,
+cardápio, relatórios) — ou seja, o próprio uso que antes era o único.
+
+### O que muda
+
+| Rota/página | Antes (seção 1-5) | Agora |
+| --- | --- | --- |
+| `GET /api/produtos` | `usuario_logado` | pública |
+| `POST /api/pedidos` | `usuario_logado` | pública |
+| `GET/PUT/DELETE /api/pedidos` | `usuario_logado` | **sem mudança** — continua exigindo login |
+| `/` (`index.html` + `app.js`) | tela de Pedidos (cardápio + form + tabela), exigia login | só cardápio público, sem login — vira a "loja" |
+| `/carrinho.html` (nova) | não existia | pública — carrinho, dados do cliente, "Finalizar Pedido" |
+| `/painel-pedidos.html` (nova) | não existia | exige login (atendente ou admin) — a tabela de pedidos que saiu de `/` |
+| Redirect pós-login | `/` | `/painel-pedidos.html` |
+
+### Carrinho
+
+Guardado em `localStorage` (chave `hamburgueria_carrinho`), não em memória —
+precisa sobreviver à navegação entre `/` e `/carrinho.html`, que são páginas
+HTML separadas (sem SPA/roteador). "Adicionar" no cardápio grava no
+localStorage, mostra um toast de confirmação e atualiza um contador no
+cabeçalho; `/carrinho.html` lê de lá, permite editar quantidade/remover, e no
+"Finalizar Pedido" cria o pedido de verdade (`POST /api/pedidos`) e limpa o
+carrinho.
+
+### Recorte de escopo — editar itens de um pedido existente
+
+O app antigo deixava o atendente reabrir um pedido e **editar os itens**
+dele, reaproveitando a mesma tela de cardápio+carrinho usada pra criar
+pedido. Como o cardápio agora é a loja pública (sem o form/carrinho do
+atendente), dar esse mesmo poder no painel exigiria replicar ali uma
+tela de seleção de produtos só pra isso. Decidi não fazer — o painel
+(`painel-pedidos.html`) ficou só com **ver detalhe** e **excluir**. O
+endpoint `PUT /api/pedidos/{id}` continua existindo e testado (a API não
+perdeu a capacidade), só não tem tela pra isso nessa versão. Se precisar
+de novo, é um acréscimo de UI, não de backend.
+
+### Consequência para "cliente não loga"
+
+O cliente ainda não é um usuário cadastrado — não loga, não tem
+histórico de pedidos, não acompanha status depois do checkout. A
+confirmação do pedido é só a resposta imediata do `POST /api/pedidos`
+mostrada na própria página do carrinho. Virar "cliente com conta" é o
+mesmo projeto maior já descartado na seção 1 e continua fora de escopo.
