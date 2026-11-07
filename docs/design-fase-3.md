@@ -268,3 +268,12 @@ de JWT nem de assinatura de cookie.
   seed do admin padrão.
 - Flag `Secure` no cookie de sessão (precisa de HTTPS, que o projeto não
   tem rodando localmente).
+- `crud.faturamento_diario` agrupa por dia em UTC, enquanto o restante do
+  front-end exibe horários em local (BRT) — para pedidos próximos da meia-
+  noite, o dia atribuído no gráfico pode diferir do dia mostrado na lista de
+  pedidos; adotar um fuso de negócio específico fica para uma fase futura.
+- `crud._item_subtotal` e `serializers._subtotal` duplicam o cálculo de
+  subtotal do item (`preco_unitario * quantidade`) — segue a convenção do
+  projeto de duplicar helpers pequenos em vez de compartilhar módulo, mas uma
+  mudança futura em como o preço do item é calculado (ex: usar
+  `preco_promocional`) precisa ser replicada nos dois lugares.

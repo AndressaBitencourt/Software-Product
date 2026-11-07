@@ -73,20 +73,30 @@ def seed_cardapio(db: Session) -> int:
 ADMIN_PADRAO_EMAIL = "admin@hamburgueria.com"
 ADMIN_PADRAO_SENHA = "admin123"  # credencial de demonstracao, ver README
 
+ATENDENTE_PADRAO_EMAIL = "atendente@hamburgueria.com"
+ATENDENTE_PADRAO_SENHA = "atendente123"  # credencial de demonstracao, ver README
+
 
 def seed_usuarios(db: Session) -> int:
     ja_existem = db.scalar(select(func.count()).select_from(models.Usuario))
     if ja_existem:
         return 0
-    senha_hash = bcrypt.hashpw(
-        ADMIN_PADRAO_SENHA.encode(), bcrypt.gensalt()
-    ).decode()
     admin = models.Usuario(
         nome="Administrador",
         email=ADMIN_PADRAO_EMAIL,
-        senha_hash=senha_hash,
+        senha_hash=bcrypt.hashpw(
+            ADMIN_PADRAO_SENHA.encode(), bcrypt.gensalt()
+        ).decode(),
         papel="admin",
     )
-    db.add(admin)
+    atendente = models.Usuario(
+        nome="Atendente",
+        email=ATENDENTE_PADRAO_EMAIL,
+        senha_hash=bcrypt.hashpw(
+            ATENDENTE_PADRAO_SENHA.encode(), bcrypt.gensalt()
+        ).decode(),
+        papel="atendente",
+    )
+    db.add_all([admin, atendente])
     db.commit()
-    return 1
+    return 2
